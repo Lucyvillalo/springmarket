@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro — Spring Market</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .reg-wrapper { min-height:100vh; display:flex; background:#f5f7f2; }
+    /* Panel izquierdo verde oscuro */
+    .reg-left {
+      flex: 0 0 420px; background: var(--green-700); display:flex; flex-direction:column;
+      justify-content:center; padding:60px 48px; position:relative; overflow:hidden;
+    }
+    /* Texto "SPRING MARKET" watermark */
+    .reg-watermark {
+      position:absolute; bottom:60px; left:-30px; right:-30px;
+      font-family:var(--font-display); font-size:72px; font-weight:900;
+      color:rgba(255,255,255,.08); white-space:nowrap; user-select:none;
+      line-height:1;
+    }
+    .reg-logo { font-family:var(--font-display); font-size:18px; color:#fff; display:flex; align-items:center; gap:8px; margin-bottom:32px; }
+    .reg-title { font-family:var(--font-display); font-size:40px; line-height:1.15; color:#fff; margin-bottom:20px; }
+    .reg-desc  { font-size:14px; color:rgba(255,255,255,.75); line-height:1.7; max-width:300px; }
+
+    /* Panel derecho formulario */
+    .reg-right {
+      flex:1; background:#fff; display:flex; flex-direction:column;
+      justify-content:center; padding:60px 64px;
+    }
+    .reg-role-badge {
+      display:inline-flex; align-items:center; gap:8px; background:var(--green-50);
+      border:1px solid var(--green-200); border-radius:50px; padding:6px 16px;
+      font-size:12px; font-weight:600; color:var(--green-700); margin-bottom:28px;
+    }
+    .reg-form-title { font-size:26px; font-weight:700; color:var(--gray-800); margin-bottom:6px; }
+    .reg-form-sub   { font-size:14px; color:var(--gray-400); margin-bottom:32px; }
+
+    .input-icon-wrap { position:relative; }
+    .input-icon-wrap svg { position:absolute; left:13px; top:50%; transform:translateY(-50%); opacity:.35; width:15px; height:15px; }
+    .input-icon-wrap input { padding-left:38px; }
+
+    .btn-crear { width:100%; padding:14px; border-radius:50px; border:none; cursor:pointer; font-size:15px; font-weight:700; font-family:var(--font-main); background:var(--green-700); color:#fff; display:flex; align-items:center; justify-content:center; gap:8px; transition:background .2s; margin-top:8px; }
+    .btn-crear:hover { background:var(--green-900); }
+
+    .reg-login { text-align:center; margin-top:20px; font-size:13px; color:var(--gray-600); }
+    .reg-login a { color:var(--green-700); font-weight:700; text-decoration:none; }
+
+    @media(max-width:800px){ .reg-wrapper{flex-direction:column;} .reg-left{flex:none;padding:40px 24px;} .reg-right{padding:40px 24px;} }
+  </style>
+</head>
+<body>
+<div class="reg-wrapper">
+  <!-- Izquierda verde -->
+  <div class="reg-left">
+    <div class="reg-logo">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M12 2C8 2 5 5.5 5 10c0 5 4 10 7 12 3-2 7-7 7-12 0-4.5-3-8-7-8z"/></svg>
+      SPRING MARKET
+    </div>
+    <div class="reg-title">Únete a la<br>Revolución<br>Fresca</div>
+    <div class="reg-desc">Gestiona inventarios con la precisión de un artesano y la eficiencia de la tecnología moderna.</div>
+    <div class="reg-watermark">SPRING MARKET</div>
+  </div>
+
+  <!-- Derecha formulario -->
+  <div class="reg-right">
+    <div class="reg-role-badge">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      ROL: EMPLEADO / VENDEDOR
+    </div>
+    <div class="reg-form-title">Crear nueva cuenta</div>
+    <div class="reg-form-sub">Ingresa tus datos para comenzar a operar.</div>
+
+    <div id="alert-box" class="alert"></div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Nombre</label>
+        <input type="text" id="nombre" placeholder="Ej: Paula">
+      </div>
+      <div class="form-group">
+        <label>Apellido</label>
+        <input type="text" id="apellido" placeholder="Ej: Alvarez">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Correo electrónico</label>
+      <div class="input-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
+        <input type="email" id="email" placeholder="julian.alvarez@springmarket.com">
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" id="password" placeholder="••••••••">
+      </div>
+      <div class="form-group">
+        <label>Confirmar contraseña</label>
+        <input type="password" id="password2" placeholder="••••••••">
+      </div>
+    </div>
+
+    <label style="display:flex;align-items:center;gap:10px;font-size:13px;text-transform:none;letter-spacing:0;color:var(--gray-600);cursor:pointer;margin-bottom:16px">
+      <input type="checkbox" id="terminos" style="width:auto;accent-color:var(--green-700)">
+      Acepto los <a href="#" style="color:var(--green-700);font-weight:600">Términos y Condiciones</a>
+    </label>
+
+    <button class="btn-crear" onclick="registrar()">Crear Cuenta →</button>
+
+    <div class="reg-login">¿Ya tienes una cuenta? <a href="login-form.html">Inicia Sesión</a></div>
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+  async function registrar() {
+    const nombre   = (document.getElementById('nombre').value + ' ' + document.getElementById('apellido').value).trim();
+    const email    = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const pass2    = document.getElementById('password2').value;
+    if (!nombre || !email || !password) return showAlert('danger', 'Todos los campos son obligatorios');
+    if (password !== pass2) return showAlert('danger', 'Las contraseñas no coinciden');
+    if (password.length < 6) return showAlert('danger', 'La contraseña debe tener al menos 6 caracteres');
+    if (!document.getElementById('terminos').checked) return showAlert('danger', 'Acepta los términos y condiciones');
+    try {
+      // Endpoint público - llamar sin token de auth
+      const res = await fetch('http://localhost:8085/api/clientes/registro', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre, email, password })
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || err.error || 'Error al registrar');
+      }
+      showAlert('success', '✓ Cuenta creada. Redirigiendo...');
+      setTimeout(() => window.location.href = 'login-form.html', 1500);
+    } catch (e) { showAlert('danger', 'Error: ' + e.message); }
+  }
+</script>
+</body>
+</html>
