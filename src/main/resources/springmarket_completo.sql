@@ -28,7 +28,7 @@ DROP TABLE IF EXISTS sucursal;
 -- =============================================
 
 CREATE TABLE sucursal (
-  id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+  id_sucursal          BIGINT AUTO_INCREMENT PRIMARY KEY,
   nombre      VARCHAR(100) NOT NULL,
   direccion   VARCHAR(255),
   telefono    VARCHAR(20),
@@ -60,7 +60,7 @@ CREATE TABLE empleado (
 );
 
 CREATE TABLE cliente (
-  id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+  id_cliente          BIGINT AUTO_INCREMENT PRIMARY KEY,
   nombre      VARCHAR(100) NOT NULL,
   email       VARCHAR(100) NOT NULL UNIQUE,
   telefono    VARCHAR(20),
@@ -156,13 +156,13 @@ INSERT INTO proveedor (nombre, contacto, telefono, email, direccion) VALUES
 -- =============================================
 INSERT INTO empleado (nombre, username, password, cargo, id_sucursal) VALUES
   ('Administrador', 'admin',
-   '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+   '$2a$10$lpOELUwXTszD7O5dMYNriufKaBUf9iuPxN80Ot9hNYZAr3SQlx3Ji',
    'ADMIN', 1),
   ('Juan Cajero', 'cajero1',
-   '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+   '$2a$10$lpOELUwXTszD7O5dMYNriufKaBUf9iuPxN80Ot9hNYZAr3SQlx3Ji',
    'CAJERO', 1),
   ('Ana Cajero', 'cajero2',
-   '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+   '$2a$10$lpOELUwXTszD7O5dMYNriufKaBUf9iuPxN80Ot9hNYZAr3SQlx3Ji',
    'CAJERO', 2);
 
 -- =============================================
@@ -172,9 +172,9 @@ INSERT INTO empleado (nombre, username, password, cargo, id_sucursal) VALUES
 -- =============================================
 INSERT INTO cliente (nombre, email, telefono, direccion, password) VALUES
   ('María González', 'maria@email.com', '7111-2222', 'Col. Escalón, San Salvador',
-   '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy'),
+   '$2a$10$lpOELUwXTszD7O5dMYNriufKaBUf9iuPxN80Ot9hNYZAr3SQlx3Ji'),
   ('Carlos Rivas',   'carlos@email.com','7333-4444', 'Res. Miraflores, San Salvador',
-   '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy');
+   '$2a$10$lpOELUwXTszD7O5dMYNriufKaBUf9iuPxN80Ot9hNYZAr3SQlx3Ji');
 
 -- Productos
 INSERT INTO producto (nombre, precio, stock, id_categoria, id_proveedor) VALUES
