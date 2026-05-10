@@ -56,7 +56,7 @@ CREATE TABLE empleado (
   password      VARCHAR(255) NOT NULL,
   cargo         VARCHAR(50)  NOT NULL,  -- ADMIN | CAJERO
   id_sucursal   BIGINT,
-  CONSTRAINT fk_emp_sucursal FOREIGN KEY (id_sucursal) REFERENCES sucursal(id)
+  CONSTRAINT fk_emp_sucursal FOREIGN KEY (id_sucursal) REFERENCES sucursal(id_sucursal)
 );
 
 CREATE TABLE cliente (
@@ -87,7 +87,7 @@ CREATE TABLE inventario (
   stock_minimo            INT DEFAULT 0,
   ultima_actualizacion    DATETIME,
   CONSTRAINT fk_inv_prod FOREIGN KEY (id_producto)  REFERENCES producto(id),
-  CONSTRAINT fk_inv_suc  FOREIGN KEY (id_sucursal)  REFERENCES sucursal(id)
+  CONSTRAINT fk_inv_suc  FOREIGN KEY (id_sucursal)  REFERENCES sucursal(id_sucursal)
 );
 
 CREATE TABLE venta (
@@ -98,9 +98,9 @@ CREATE TABLE venta (
   id_cliente      BIGINT,
   id_empleado     BIGINT,
   id_sucursal     BIGINT,
-  CONSTRAINT fk_venta_cli  FOREIGN KEY (id_cliente)  REFERENCES cliente(id),
+  CONSTRAINT fk_venta_cli  FOREIGN KEY (id_cliente)  REFERENCES cliente(id_cliente),
   CONSTRAINT fk_venta_emp  FOREIGN KEY (id_empleado) REFERENCES empleado(id_empleado),
-  CONSTRAINT fk_venta_suc  FOREIGN KEY (id_sucursal) REFERENCES sucursal(id)
+  CONSTRAINT fk_venta_suc  FOREIGN KEY (id_sucursal) REFERENCES sucursal(id_sucursal)
 );
 
 CREATE TABLE detalle_venta (
@@ -205,6 +205,33 @@ INSERT INTO inventario (id_producto, id_sucursal, stock, stock_minimo, ultima_ac
   (9,  2,200,  50, NOW()),
   (10, 2, 25,   5, NOW()),
   (11, 2, 60,  10, NOW());
+
+-- Ventas de prueba para reportes
+INSERT INTO venta (fecha, total, estado, id_cliente, id_empleado, id_sucursal) VALUES
+  ('2026-03-26 10:15:00', 6.50,  'COMPLETADA', 1, 2, 1),
+  ('2026-03-25 14:20:00', 12.40, 'PENDIENTE',  2, 3, 2),
+  ('2026-03-25 16:05:00', 45.00, 'COMPLETADA', 1, 2, 1),
+  ('2026-03-24 09:45:00', 8.20,  'CANCELADA',  2, 3, 2),
+  ('2026-03-24 18:30:00', 15.00, 'COMPLETADA', 1, 2, 1);
+
+INSERT INTO detalle_venta (id_venta, id_producto, cantidad, precio_unitario, subtotal) VALUES
+  (1, 1, 2, 1.25, 2.50),
+  (1, 8, 8, 0.50, 4.00),
+  (2, 7, 4, 1.50, 6.00),
+  (2, 11, 4, 0.90, 3.60),
+  (3, 4, 10, 4.00, 40.00),
+  (3, 2, 2, 2.50, 5.00),
+  (4, 5, 4, 0.80, 3.20),
+  (4, 6, 5, 0.60, 3.00),
+  (5, 3, 3, 3.50, 10.50),
+  (5, 9, 30, 0.15, 4.50);
+
+INSERT INTO pago (id_venta, metodo_pago, monto, fecha_pago) VALUES
+  (1, 'EFECTIVO',      6.50,  '2026-03-26 10:16:00'),
+  (2, 'TARJETA',       12.40, '2026-03-25 14:21:00'),
+  (3, 'TRANSFERENCIA', 45.00, '2026-03-25 16:06:00'),
+  (4, 'EFECTIVO',      8.20,  '2026-03-24 09:46:00'),
+  (5, 'TARJETA',       15.00, '2026-03-24 18:31:00');
 
 -- =============================================
 -- CREDENCIALES DE PRUEBA

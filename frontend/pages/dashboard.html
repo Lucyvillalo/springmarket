@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spring Market - Dashboard</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <script src="../js/api.js"></script>
+  <script>
+    if (!Auth.requireAuth(['ADMIN', 'CAJERO', 'CLIENTE'])) {
+      throw new Error('No autorizado');
+    }
+
+    const cargo = localStorage.getItem('cargo');
+    if (cargo === 'CLIENTE') {
+      window.location.replace('reportes.html');
+    } else {
+      window.location.replace('reportes.html');
+    }
+  </script>
+</body>
+</html>

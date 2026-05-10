@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spring Market - Reportes</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    body { background: #f4f7ef; color: #111827; }
+    .admin-shell { min-height: 100vh; display: grid; grid-template-columns: 255px 1fr; }
+    .admin-sidebar {
+      background: #b8f2c9;
+      border-right: 1px solid rgba(34, 197, 94, .25);
+      padding: 22px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 42px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+    .brand { display: flex; align-items: center; gap: 9px; color: #19c45b; font-weight: 800; font-size: 16px; }
+    .brand-mark {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: #16d45b; color: #fff; display: grid; place-items: center;
+      font-weight: 800; font-size: 15px;
+    }
+    .side-nav { display: flex; flex-direction: column; gap: 14px; margin-top: 34px; }
+    .side-item {
+      display: flex; align-items: center; gap: 11px; padding: 10px 7px;
+      color: #345246; text-decoration: none; font-size: 13px; border-radius: 8px;
+      border: 0; background: transparent; cursor: pointer; font-family: var(--font-main);
+    }
+    .side-item.active, .side-item:hover { color: #153826; background: rgba(255,255,255,.32); }
+    .side-icon { width: 18px; text-align: center; opacity: .8; }
+    .logout { margin-top: auto; color: #ef4444; }
+    .report-main { padding: 24px 16px 30px; overflow-x: hidden; }
+    .topbar { display: flex; align-items: center; gap: 18px; margin-bottom: 18px; }
+    .global-search {
+      width: min(430px, 48vw); border: 0; background: rgba(255,255,255,.54);
+      border-radius: 999px; height: 36px; padding-left: 34px;
+    }
+    .top-actions { margin-left: auto; display: flex; align-items: center; gap: 18px; color: #34475d; }
+    .manager { display: flex; align-items: center; gap: 12px; padding-left: 18px; border-left: 1px solid #dbe3dc; }
+    .manager-name { font-size: 12px; font-weight: 800; line-height: 1.1; text-align: right; }
+    .manager-role { display: block; font-size: 8px; color: #64748b; letter-spacing: .08em; }
+    .avatar { width: 34px; height: 34px; border-radius: 50%; border: 2px solid #dbeafe; background: #1f2937; color: #fff; display: grid; place-items: center; font-weight: 800; }
+    .report-header h1 { font-size: 28px; line-height: 1.1; font-weight: 800; margin: 8px 0 3px; }
+    .report-header p { color: #64748b; font-size: 13px; }
+    .summary-grid { display: grid; grid-template-columns: repeat(3, minmax(180px, 1fr)); gap: 14px; margin: 24px 0 18px; }
+    .summary-card { background: #fff; border: 1px solid #e6ebef; border-radius: 8px; padding: 16px 18px; box-shadow: 0 2px 10px rgba(15, 23, 42, .04); }
+    .summary-label { color: #64748b; font-size: 11px; text-transform: uppercase; font-weight: 800; letter-spacing: .08em; }
+    .summary-value { font-size: 24px; font-weight: 900; margin-top: 5px; }
+    .report-card {
+      background: #fff; border: 1px solid #e6ebef; border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(15, 23, 42, .05); overflow: hidden;
+    }
+    .report-toolbar {
+      display: grid; grid-template-columns: minmax(180px, 1.3fr) minmax(170px, .85fr) minmax(190px, .95fr) auto;
+      gap: 8px; padding: 19px; border-bottom: 1px solid #edf1f4; align-items: center;
+    }
+    .toolbar-input, .toolbar-select {
+      height: 31px; border-radius: 7px; border: 1px solid #dbe4ef; background: #f8fafc;
+      font-size: 12px; color: #475569; padding: 0 12px;
+    }
+    .export-btn {
+      justify-self: end; height: 31px; border: 1px solid #dbe4ef; background: #f8fafc;
+      color: #334155; border-radius: 7px; padding: 0 14px; font-weight: 700; font-size: 12px;
+      cursor: pointer;
+    }
+    .report-table { min-width: 810px; }
+    .report-table th {
+      background: #f6f9ef; color: #334155; font-size: 11px; height: 46px;
+      letter-spacing: .04em; padding: 12px 18px;
+    }
+    .report-table td { padding: 18px; color: #475569; height: 78px; }
+    .sale-code { color: #111827; font-weight: 900; font-size: 15px; line-height: 1.35; }
+    .method {
+      display: inline-block; background: #f1f5f9; color: #475569; font-size: 9px;
+      font-weight: 900; padding: 3px 7px; border-radius: 4px;
+    }
+    .total { color: #111827; font-size: 15px; font-weight: 900; }
+    .status {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 74px; padding: 4px 10px; border-radius: 999px; font-size: 10px; font-weight: 900;
+    }
+    .status.completada { background: #dcfce7; color: #07883f; border: 1px solid #bbf7d0; }
+    .status.pendiente { background: #fff7ed; color: #c46a00; border: 1px solid #fed7aa; }
+    .status.cancelada, .status.devuelta { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+    .action-cell { white-space: nowrap; color: #8aa0b8; font-size: 12px; font-weight: 800; }
+    .table-footer {
+      display: flex; align-items: center; gap: 24px; padding: 18px 19px;
+      color: #64748b; font-size: 12px; border-top: 1px solid #edf1f4;
+    }
+    .pager { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+    .page-button { width: 31px; height: 31px; border-radius: 8px; border: 1px solid #b8c7da; background: #fff; color: #64748b; cursor: pointer; }
+    .page-button.active { background: #2c873a; color: #fff; border-color: #2c873a; font-weight: 800; }
+    .muted { color: #94a3b8; }
+    @media (max-width: 900px) {
+      .admin-shell { grid-template-columns: 1fr; }
+      .admin-sidebar { position: static; height: auto; gap: 10px; }
+      .side-nav { flex-direction: row; flex-wrap: wrap; margin-top: 8px; }
+      .logout { margin-top: 0; }
+      .summary-grid, .report-toolbar { grid-template-columns: 1fr; }
+      .global-search { width: 100%; }
+      .topbar { flex-wrap: wrap; }
+      .top-actions { margin-left: 0; width: 100%; justify-content: flex-end; }
+    }
+  </style>
+</head>
+<body>
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <div>
+      <div class="brand"><span class="brand-mark">S</span> Spring Market</div>
+      <nav class="side-nav" id="side-nav">
+        <a class="side-item" href="dashboard.html"><span class="side-icon">D</span> Dashboard</a>
+        <a class="side-item admin-only" href="productos.html"><span class="side-icon">P</span> Productos</a>
+        <a class="side-item admin-only" href="sucursales.html"><span class="side-icon">S</span> Sucursales</a>
+        <a class="side-item active" href="reportes.html"><span class="side-icon">R</span> Reportes</a>
+      </nav>
+    </div>
+    <button class="side-item logout" onclick="Auth.logout()"><span class="side-icon">X</span> Cerrar Sesion</button>
+  </aside>
+
+  <main class="report-main">
+    <div class="topbar">
+      <input class="global-search" id="global-search" placeholder="Buscar productos, ventas o categorias...">
+      <div class="top-actions">
+        <span>!</span>
+        <span>*</span>
+        <div class="manager">
+          <div class="manager-name">
+            <span id="user-name">Usuario</span>
+            <span class="manager-role" id="user-role">ADMINISTRADOR</span>
+          </div>
+          <div class="avatar" id="avatar">SM</div>
+        </div>
+      </div>
+    </div>
+
+    <section class="report-header">
+      <h1 id="page-title">Reportes</h1>
+      <p id="page-subtitle">Metricas de ventas y administracion en tiempo real.</p>
+    </section>
+
+    <section class="summary-grid">
+      <div class="summary-card">
+        <div class="summary-label">Ventas</div>
+        <div class="summary-value" id="summary-count">0</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Monto total</div>
+        <div class="summary-value" id="summary-total">$0.00</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label" id="summary-context-label">Vista</div>
+        <div class="summary-value" id="summary-context">Global</div>
+      </div>
+    </section>
+
+    <section class="report-card">
+      <div class="report-toolbar">
+        <input class="toolbar-input" id="sale-filter" placeholder="Buscar por ID de venta...">
+        <select class="toolbar-select" id="branch-filter">
+          <option value="">Todas las sucursales</option>
+        </select>
+        <input class="toolbar-input" id="date-filter" type="text" placeholder="20/03/2026 - 27/03/2026">
+        <button class="export-btn" onclick="window.print()">Export PDF</button>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="report-table">
+          <thead>
+          <tr>
+            <th>Venta</th>
+            <th>Sucursal</th>
+            <th>Fecha</th>
+            <th id="person-header">Vendedor</th>
+            <th>Metodo</th>
+            <th>Total</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+          </thead>
+          <tbody id="ventas-body">
+          <tr><td colspan="8" class="muted">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-footer">
+        <span id="range-info">Showing 0 - 0 of 0 ventas</span>
+        <span>Filas por pagina:
+          <select id="page-size" style="width:58px;height:31px;padding:0 8px"><option>5</option><option>10</option><option>20</option></select>
+        </span>
+        <div class="pager">
+          <button class="page-button" id="prev-page">&lt;</button>
+          <button class="page-button active" id="current-page">1</button>
+          <button class="page-button" id="next-page">&gt;</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+  if (!Auth.requireAuth(['ADMIN', 'CAJERO', 'CLIENTE'])) {
+    throw new Error('No autorizado');
+  }
+
+  const state = { ventas: [], filtered: [], page: 1, pageSize: 5, sucursales: [] };
+  const cargo = localStorage.getItem('cargo');
+  const nombre = localStorage.getItem('nombre') || 'Usuario';
+
+  document.getElementById('user-name').textContent = nombre;
+  document.getElementById('avatar').textContent = nombre.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase();
+  document.getElementById('user-role').textContent =
+    cargo === 'ADMIN' ? 'INVENTORY MANAGER' : cargo === 'CAJERO' ? 'CAJERO' : 'CLIENTE';
+
+  if (cargo !== 'ADMIN') {
+    document.querySelectorAll('.admin-only').forEach(el => el.remove());
+    document.getElementById('branch-filter').style.display = 'none';
+  }
+  if (cargo === 'CAJERO') {
+    document.getElementById('page-title').textContent = 'Mis ventas';
+    document.getElementById('page-subtitle').textContent = 'Reporte de ventas registradas por tu usuario.';
+    document.getElementById('summary-context').textContent = 'Cajero';
+  }
+  if (cargo === 'CLIENTE') {
+    document.getElementById('page-title').textContent = 'Mis compras';
+    document.getElementById('page-subtitle').textContent = 'Reporte de compras realizadas por tu cuenta.';
+    document.getElementById('person-header').textContent = 'Cliente';
+    document.getElementById('summary-context').textContent = 'Cliente';
+  }
+
+  async function cargar() {
+    try {
+      if (cargo === 'ADMIN') {
+        await cargarSucursales();
+        const reporte = await Ventas.reporteGlobal();
+        state.ventas = reporte.ventas || [];
+        pintarResumen(reporte);
+      } else if (cargo === 'CAJERO') {
+        const reporte = await Ventas.reporteMisVentas();
+        state.ventas = reporte.ventas || [];
+        pintarResumen(reporte);
+      } else {
+        const reporte = await Ventas.reporteMisCompras();
+        state.ventas = reporte.ventas || [];
+        pintarResumen(reporte);
+      }
+      aplicarFiltros();
+    } catch (error) {
+      document.getElementById('ventas-body').innerHTML = `<tr><td colspan="8" class="muted">${error.message}</td></tr>`;
+    }
+  }
+
+  async function cargarSucursales() {
+    const select = document.getElementById('branch-filter');
+    state.sucursales = await Sucursales.listar();
+    select.innerHTML = '<option value="">Todas las sucursales</option>' +
+      state.sucursales.map(s => `<option value="${s.id}">${s.nombre}</option>`).join('');
+  }
+
+  function pintarResumen(reporte) {
+    document.getElementById('summary-count').textContent = reporte.totalVentas || 0;
+    document.getElementById('summary-total').textContent = formatPrice(reporte.montoTotal || 0);
+  }
+
+  function aplicarFiltros() {
+    const query = document.getElementById('sale-filter').value.trim().toLowerCase();
+    const branch = document.getElementById('branch-filter').value;
+    state.filtered = state.ventas.filter(v => {
+      const matchSale = !query || String(v.id).includes(query) || (`venta #${v.id}`).toLowerCase().includes(query);
+      const matchBranch = !branch || String(v.sucursal?.id || '') === branch;
+      return matchSale && matchBranch;
+    });
+    state.page = 1;
+    renderTabla();
+  }
+
+  function renderTabla() {
+    const tbody = document.getElementById('ventas-body');
+    const start = (state.page - 1) * state.pageSize;
+    const rows = state.filtered.slice(start, start + state.pageSize);
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="8" class="muted">No hay ventas para mostrar.</td></tr>';
+    } else {
+      tbody.innerHTML = rows.map(v => {
+        const persona = cargo === 'CLIENTE' ? (v.cliente?.nombre || nombre) : (v.empleado?.nombre || nombre);
+        const metodo = v.pagos?.[0]?.metodoPago || 'EFECTIVO';
+        const estado = (v.estado || 'COMPLETADA').toLowerCase();
+        return `<tr>
+          <td><div class="sale-code">Venta<br>#${v.id}</div></td>
+          <td>${v.sucursal?.nombre || 'Sin sucursal'}</td>
+          <td>${formatDateOnly(v.fecha)}</td>
+          <td>${persona}</td>
+          <td><span class="method">${metodo}</span></td>
+          <td><span class="total">${formatPrice(v.total || 0)}</span></td>
+          <td><span class="status ${estado}">${capitalize(v.estado || 'COMPLETADA')}</span></td>
+          <td class="action-cell">Ver PDF</td>
+        </tr>`;
+      }).join('');
+    }
+    const end = Math.min(start + state.pageSize, state.filtered.length);
+    document.getElementById('range-info').textContent = `Showing ${state.filtered.length ? start + 1 : 0} - ${end} of ${state.filtered.length} ventas`;
+    document.getElementById('current-page').textContent = state.page;
+    document.getElementById('prev-page').disabled = state.page === 1;
+    document.getElementById('next-page').disabled = end >= state.filtered.length;
+  }
+
+  function formatDateOnly(value) {
+    if (!value) return '-';
+    return new Date(value).toLocaleDateString('es-SV');
+  }
+
+  function capitalize(value) {
+    return String(value).toLowerCase().replace(/^\w/, c => c.toUpperCase());
+  }
+
+  document.getElementById('sale-filter').addEventListener('input', aplicarFiltros);
+  document.getElementById('branch-filter').addEventListener('change', aplicarFiltros);
+  document.getElementById('page-size').addEventListener('change', e => {
+    state.pageSize = Number(e.target.value);
+    state.page = 1;
+    renderTabla();
+  });
+  document.getElementById('prev-page').addEventListener('click', () => {
+    if (state.page > 1) state.page--;
+    renderTabla();
+  });
+  document.getElementById('next-page').addEventListener('click', () => {
+    if (state.page * state.pageSize < state.filtered.length) state.page++;
+    renderTabla();
+  });
+
+  cargar();
+</script>
+</body>
+</html>

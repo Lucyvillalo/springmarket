@@ -145,11 +145,16 @@ const Ventas = {
   buscar:          (id)    => get('/ventas/' + id),
   porSucursal:     (id)    => get('/ventas/sucursal/' + id),
   porCliente:      (id)    => get('/ventas/cliente/' + id),
+  porEmpleado:     (id)    => get('/ventas/empleado/' + id),
+  misVentas:       ()      => get('/ventas/mis-ventas'),
+  misCompras:      ()      => get('/ventas/mis-compras'),
   hoy:             ()      => get('/ventas/hoy'),
   registrar:       (data)  => post('/ventas', data),
   devolucion:      (id)    => put('/ventas/' + id + '/devolucion'),
   reporteSucursal: (id)    => get('/ventas/reporte/sucursal/' + id),
-  reporteGlobal:   ()      => get('/ventas/reporte/global')
+  reporteGlobal:   ()      => get('/ventas/reporte/global'),
+  reporteMisVentas: ()     => get('/ventas/reporte/mis-ventas'),
+  reporteMisCompras: ()    => get('/ventas/reporte/mis-compras')
 };
 
 // =============================================
