@@ -332,9 +332,10 @@
   }
 
   // ── Top productos ─────────────────────────────────
+  // Recibe la lista ya ordenada desde GET /api/productos/mas-vendidos
   function renderTopProductos(productos) {
     const tbody = document.getElementById('top-productos-body');
-    const top = [...productos].sort((a, b) => (b.stock || 0) - (a.stock || 0)).slice(0, 7);
+    const top = productos.slice(0, 7);
 
     if (!top.length) {
       tbody.innerHTML = '<tr><td colspan="4" class="empty-msg">Sin datos.</td></tr>';
@@ -385,15 +386,20 @@
   // ── Carga principal ───────────────────────────────
   async function cargar() {
     try {
+      // GET /api/productos  → ProductoController.listar() → ProductoService.listarTodos()
       const productos = await Productos.listar();
       document.getElementById('kpi-productos').textContent =
         productos.filter(p => (p.stock || 0) > 0).length;
-      renderTopProductos(productos);
+
       if (cargo === 'ADMIN') {
         renderStockBajo(productos);
         document.getElementById('kpi-stock-bajo').textContent =
           productos.filter(p => (p.stock || 0) <= 5).length;
       }
+
+      // GET /api/productos/mas-vendidos → ProductoController.masVendidos() → ProductoService
+      const masVendidos = await Productos.masVendidos();
+      renderTopProductos(masVendidos);
 
       const reporte = cargo === 'ADMIN'
         ? await Ventas.reporteGlobal()
