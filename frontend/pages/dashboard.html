@@ -5,20 +5,413 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Spring Market - Dashboard</title>
   <link rel="stylesheet" href="../css/style.css">
-</head>
-<body>
-  <script src="../js/api.js"></script>
-  <script>
-    if (!Auth.requireAuth(['ADMIN', 'CAJERO', 'CLIENTE'])) {
-      throw new Error('No autorizado');
+  <style>
+    body { background: #f4f7ef; color: #111827; }
+    .admin-shell { min-height: 100vh; display: grid; grid-template-columns: 255px 1fr; }
+
+    /* ── Sidebar ── */
+    .admin-sidebar {
+      background: #b8f2c9;
+      border-right: 1px solid rgba(34,197,94,.25);
+      padding: 22px 20px;
+      display: flex; flex-direction: column; gap: 42px;
+      position: sticky; top: 0; height: 100vh;
+    }
+    .brand { display: flex; align-items: center; gap: 9px; color: #19c45b; font-weight: 800; font-size: 16px; }
+    .brand-mark {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: #16d45b; color: #fff; display: grid; place-items: center;
+      font-weight: 800; font-size: 15px;
+    }
+    .side-nav { display: flex; flex-direction: column; gap: 14px; margin-top: 34px; }
+    .side-item {
+      display: flex; align-items: center; gap: 11px; padding: 10px 7px;
+      color: #345246; text-decoration: none; font-size: 13px; border-radius: 8px;
+      border: 0; background: transparent; cursor: pointer; font-family: var(--font-main);
+    }
+    .side-item.active, .side-item:hover { color: #153826; background: rgba(255,255,255,.32); }
+    .side-icon { width: 18px; text-align: center; opacity: .8; }
+    .logout { margin-top: auto; color: #ef4444; }
+
+    /* ── Main ── */
+    .dash-main { padding: 24px 28px 36px; overflow-x: hidden; }
+    .topbar { display: flex; align-items: center; gap: 18px; margin-bottom: 22px; }
+    .top-actions { margin-left: auto; display: flex; align-items: center; gap: 18px; color: #34475d; }
+    .manager { display: flex; align-items: center; gap: 12px; padding-left: 18px; border-left: 1px solid #dbe3dc; }
+    .manager-name { font-size: 12px; font-weight: 800; line-height: 1.1; text-align: right; }
+    .manager-role { display: block; font-size: 8px; color: #64748b; letter-spacing: .08em; }
+    .avatar {
+      width: 34px; height: 34px; border-radius: 50%; border: 2px solid #dbeafe;
+      background: #1f2937; color: #fff; display: grid; place-items: center; font-weight: 800;
     }
 
-    const cargo = localStorage.getItem('cargo');
-    if (cargo === 'CLIENTE') {
-      window.location.replace('reportes.html');
-    } else {
-      window.location.replace('reportes.html');
+    /* ── Header ── */
+    .dash-header { margin-bottom: 24px; }
+    .dash-header h1 { font-size: 28px; font-weight: 800; margin: 0 0 4px; }
+    .dash-header p { color: #64748b; font-size: 13px; margin: 0; }
+
+    /* ── KPI cards ── */
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+    .kpi-card {
+      background: #fff; border: 1px solid #e6ebef; border-radius: 10px;
+      padding: 18px 20px; box-shadow: 0 2px 10px rgba(15,23,42,.04);
     }
-  </script>
+    .kpi-label { color: #64748b; font-size: 11px; text-transform: uppercase; font-weight: 700; letter-spacing: .08em; margin-bottom: 6px; }
+    .kpi-value { font-size: 26px; font-weight: 900; color: #111827; }
+    .kpi-sub { font-size: 11px; color: #9ca3af; margin-top: 4px; }
+    .kpi-icon { float: right; font-size: 28px; margin-top: -4px; }
+
+    /* ── Two-column layout ── */
+    .dash-row { display: grid; grid-template-columns: 1fr 340px; gap: 18px; margin-bottom: 18px; }
+
+    /* ── Chart card ── */
+    .chart-card {
+      background: #fff; border: 1px solid #e6ebef; border-radius: 10px;
+      padding: 20px 22px; box-shadow: 0 2px 10px rgba(15,23,42,.04);
+    }
+    .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+    .card-title { font-size: 14px; font-weight: 800; color: #111827; }
+    .card-subtitle { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+    .chart-area { position: relative; height: 220px; }
+    canvas#graficoVentas { width: 100% !important; height: 220px !important; }
+
+    /* ── Top productos ── */
+    .top-table { width: 100%; border-collapse: collapse; }
+    .top-table th {
+      text-align: left; font-size: 10px; text-transform: uppercase;
+      font-weight: 700; color: #9ca3af; letter-spacing: .07em;
+      padding: 0 0 10px; border-bottom: 1px solid #f0f0f0;
+    }
+    .top-table td { padding: 10px 0; font-size: 13px; border-bottom: 1px solid #f9fafb; vertical-align: middle; }
+    .top-table tr:last-child td { border: 0; }
+    .prod-rank { width: 20px; color: #9ca3af; font-size: 12px; font-weight: 700; }
+    .prod-name { font-weight: 600; }
+    .prod-cat { font-size: 11px; color: #9ca3af; }
+    .prod-stock { text-align: right; }
+    .stock-badge {
+      display: inline-block; padding: 2px 8px; border-radius: 99px;
+      font-size: 11px; font-weight: 700;
+    }
+    .stock-ok  { background: #d1fae5; color: #065f46; }
+    .stock-low { background: #fef3c7; color: #92400e; }
+    .stock-out { background: #fee2e2; color: #991b1b; }
+    .prod-price { text-align: right; font-weight: 700; font-size: 13px; color: #1f2937; }
+
+    /* ── Stock bajo ── */
+    .alert-list { list-style: none; margin: 0; padding: 0; }
+    .alert-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 9px 0; border-bottom: 1px solid #f9fafb; font-size: 13px;
+    }
+    .alert-item:last-child { border: 0; }
+    .alert-item strong { font-weight: 700; }
+    .alert-item span { color: #ef4444; font-weight: 700; font-size: 12px; }
+    .empty-msg { color: #9ca3af; font-size: 13px; text-align: center; padding: 20px 0; }
+  </style>
+</head>
+<body>
+<div class="admin-shell">
+
+  <!-- Sidebar -->
+  <aside class="admin-sidebar">
+    <div>
+      <div class="brand">
+        <div class="brand-mark">S</div>
+        Spring Market
+      </div>
+      <nav class="side-nav">
+        <a class="side-item active" href="dashboard.html">
+          <span class="side-icon">📊</span> Dashboard
+        </a>
+        <a class="side-item" href="productos.html">
+          <span class="side-icon">📦</span> Productos
+        </a>
+        <a class="side-item" href="ventas.html">
+          <span class="side-icon">🛒</span> Ventas
+        </a>
+        <a class="side-item" href="reportes.html">
+          <span class="side-icon">📋</span> Reportes
+        </a>
+        <a class="side-item admin-only" href="sucursales.html">
+          <span class="side-icon">🏪</span> Sucursales
+        </a>
+        <a class="side-item admin-only" href="proveedores.html">
+          <span class="side-icon">🚚</span> Proveedores
+        </a>
+        <button class="side-item logout" onclick="Auth.logout()">
+          <span class="side-icon">🚪</span> Cerrar sesión
+        </button>
+      </nav>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="dash-main">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="top-actions">
+        <div class="manager">
+          <div>
+            <div class="manager-name" id="user-name">Usuario</div>
+            <span class="manager-role" id="user-role">ROL</span>
+          </div>
+          <div class="avatar" id="avatar">U</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Header -->
+    <div class="dash-header">
+      <h1>Dashboard</h1>
+      <p>Resumen general del sistema — métricas en tiempo real.</p>
+    </div>
+
+    <!-- KPI cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon">💰</div>
+        <div class="kpi-label">Ventas hoy</div>
+        <div class="kpi-value" id="kpi-ventas-hoy">—</div>
+        <div class="kpi-sub">transacciones del día</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">📈</div>
+        <div class="kpi-label">Ingresos hoy</div>
+        <div class="kpi-value" id="kpi-ingresos-hoy">—</div>
+        <div class="kpi-sub">monto total del día</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">📦</div>
+        <div class="kpi-label">Productos activos</div>
+        <div class="kpi-value" id="kpi-productos">—</div>
+        <div class="kpi-sub">con stock disponible</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">⚠️</div>
+        <div class="kpi-label">Stock bajo</div>
+        <div class="kpi-value" id="kpi-stock-bajo" style="color:#ef4444">—</div>
+        <div class="kpi-sub">productos críticos</div>
+      </div>
+    </div>
+
+    <!-- Chart + Top productos -->
+    <div class="dash-row">
+
+      <!-- Gráfico de ventas globales -->
+      <div class="chart-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Ventas globales</div>
+            <div class="card-subtitle">Monto total por mes (últimos 6 meses)</div>
+          </div>
+          <span id="chart-total" style="font-weight:800;font-size:15px;color:#19c45b"></span>
+        </div>
+        <div class="chart-area">
+          <canvas id="graficoVentas"></canvas>
+        </div>
+      </div>
+
+      <!-- Productos más vendidos -->
+      <div class="chart-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Productos más vendidos</div>
+            <div class="card-subtitle">Por cantidad en inventario</div>
+          </div>
+        </div>
+        <table class="top-table">
+          <thead>
+          <tr>
+            <th>#</th>
+            <th>Producto</th>
+            <th style="text-align:right">Stock</th>
+            <th style="text-align:right">Precio</th>
+          </tr>
+          </thead>
+          <tbody id="top-productos-body">
+          <tr><td colspan="4" class="empty-msg">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <!-- Stock bajo -->
+    <div class="chart-card admin-only" style="max-width:680px">
+      <div class="card-header">
+        <div>
+          <div class="card-title">⚠️ Alertas de stock bajo</div>
+          <div class="card-subtitle">Productos con 5 unidades o menos</div>
+        </div>
+      </div>
+      <ul class="alert-list" id="stock-bajo-list">
+        <li class="empty-msg">Cargando...</li>
+      </ul>
+    </div>
+
+  </main>
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="../js/api.js"></script>
+<script>
+  if (!Auth.requireAuth(['ADMIN', 'CAJERO'])) throw new Error('No autorizado');
+
+  const cargo  = localStorage.getItem('cargo');
+  const nombre = localStorage.getItem('nombre') || 'Usuario';
+
+  // Configurar usuario en topbar
+  document.getElementById('user-name').textContent = nombre;
+  document.getElementById('avatar').textContent =
+    nombre.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase();
+  document.getElementById('user-role').textContent =
+    cargo === 'ADMIN' ? 'INVENTORY MANAGER' : 'CAJERO';
+
+  // Ocultar elementos solo-admin si es cajero
+  if (cargo !== 'ADMIN') {
+    document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+  }
+
+  // ── Gráfico ──────────────────────────────────────
+  let chartInstance = null;
+
+  function construirGrafico(ventas) {
+    const ahora = new Date();
+    const meses = [];
+    const montos = [];
+
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(ahora.getFullYear(), ahora.getMonth() - i, 1);
+      meses.push(d.toLocaleString('es-SV', { month: 'short', year: '2-digit' }));
+      const total = ventas
+        .filter(v => {
+          const f = new Date(v.fecha);
+          return f.getFullYear() === d.getFullYear() && f.getMonth() === d.getMonth();
+        })
+        .reduce((acc, v) => acc + parseFloat(v.total || 0), 0);
+      montos.push(parseFloat(total.toFixed(2)));
+    }
+
+    const ctx = document.getElementById('graficoVentas').getContext('2d');
+    if (chartInstance) chartInstance.destroy();
+    chartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: meses,
+        datasets: [{
+          label: 'Ingresos ($)',
+          data: montos,
+          backgroundColor: 'rgba(22, 212, 91, 0.22)',
+          borderColor: '#19c45b',
+          borderWidth: 2,
+          borderRadius: 6,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: { color: '#f0f0f0' },
+            ticks: { callback: v => '$' + v, font: { size: 11 } }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { font: { size: 11 } }
+          }
+        }
+      }
+    });
+
+    const totalGlobal = montos.reduce((a, b) => a + b, 0);
+    document.getElementById('chart-total').textContent = '$' + totalGlobal.toFixed(2);
+  }
+
+  // ── Top productos ─────────────────────────────────
+  function renderTopProductos(productos) {
+    const tbody = document.getElementById('top-productos-body');
+    const top = [...productos].sort((a, b) => (b.stock || 0) - (a.stock || 0)).slice(0, 7);
+
+    if (!top.length) {
+      tbody.innerHTML = '<tr><td colspan="4" class="empty-msg">Sin datos.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = top.map((p, i) => {
+      const stock = p.stock || 0;
+      const badge = stock === 0
+        ? '<span class="stock-badge stock-out">Sin stock</span>'
+        : stock <= 5
+        ? `<span class="stock-badge stock-low">${stock}</span>`
+        : `<span class="stock-badge stock-ok">${stock}</span>`;
+      const cat = p.categoria?.nombre || '—';
+      return `<tr>
+        <td class="prod-rank">${i + 1}</td>
+        <td><div class="prod-name">${p.nombre}</div><div class="prod-cat">${cat}</div></td>
+        <td class="prod-stock">${badge}</td>
+        <td class="prod-price">${formatPrice(p.precio)}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ── Stock bajo ────────────────────────────────────
+  function renderStockBajo(productos) {
+    const bajos = productos.filter(p => (p.stock || 0) <= 5);
+    const lista = document.getElementById('stock-bajo-list');
+    document.getElementById('kpi-stock-bajo').textContent = bajos.length;
+
+    if (!bajos.length) {
+      lista.innerHTML = '<li class="empty-msg">✅ Todos los productos tienen stock suficiente.</li>';
+      return;
+    }
+    lista.innerHTML = bajos.map(p => `
+      <li class="alert-item">
+        <strong>${p.nombre}</strong>
+        <span>${p.stock || 0} unidad${p.stock === 1 ? '' : 'es'}</span>
+      </li>`).join('');
+  }
+
+  // ── KPI Ventas hoy ────────────────────────────────
+  function renderKpiHoy(ventas) {
+    const hoyTotal = ventas.reduce((a, v) => a + parseFloat(v.total || 0), 0);
+    document.getElementById('kpi-ventas-hoy').textContent = ventas.length;
+    document.getElementById('kpi-ingresos-hoy').textContent = '$' + hoyTotal.toFixed(2);
+  }
+
+  // ── Carga principal ───────────────────────────────
+  async function cargar() {
+    try {
+      const productos = await Productos.listar();
+      document.getElementById('kpi-productos').textContent =
+        productos.filter(p => (p.stock || 0) > 0).length;
+      renderTopProductos(productos);
+      if (cargo === 'ADMIN') {
+        renderStockBajo(productos);
+        document.getElementById('kpi-stock-bajo').textContent =
+          productos.filter(p => (p.stock || 0) <= 5).length;
+      }
+
+      const reporte = cargo === 'ADMIN'
+        ? await Ventas.reporteGlobal()
+        : await Ventas.reporteMisVentas();
+
+      const todasVentas = reporte.ventas || [];
+      construirGrafico(todasVentas);
+
+      const hoy = new Date().toDateString();
+      const ventasHoy = todasVentas.filter(v => new Date(v.fecha).toDateString() === hoy);
+      renderKpiHoy(ventasHoy);
+
+    } catch (err) {
+      console.error('Error cargando dashboard:', err.message);
+    }
+  }
+
+  cargar();
+</script>
 </body>
 </html>
