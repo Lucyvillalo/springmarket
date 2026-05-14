@@ -48,6 +48,10 @@
     }
     .summary-label { color: #64748b; font-size: 11px; text-transform: uppercase; font-weight: 800; letter-spacing: .08em; }
     .summary-value { font-size: 20px; font-weight: 900; color: #111827; margin-top: 4px; }
+    .summary-select {
+      width: 100%; height: 36px; margin-top: 7px; border: 1px solid #e2e8f0; border-radius: 8px;
+      padding: 0 12px; font-size: 16px; font-weight: 900; color: #111827; background: #fff;
+    }
     .sales-layout { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 18px; align-items: start; }
     .panel {
       background: #fff; border: 1px solid #e6ebef; border-radius: 12px;
@@ -195,6 +199,7 @@
       <div class="summary-card">
         <div class="summary-label">Sucursal</div>
         <div class="summary-value" id="vendedor-sucursal">-</div>
+        <select class="summary-select admin-only" id="resumen-sucursal-id" aria-label="Cambiar sucursal activa"></select>
       </div>
       <div class="summary-card">
         <div class="summary-label">Ventas recientes</div>
@@ -304,15 +309,19 @@
   const cargo = localStorage.getItem('cargo');
   const nombre = localStorage.getItem('nombre') || 'Usuario';
   const sucursalLocal = localStorage.getItem('sucursalId');
+  let sucursalActiva = localStorage.getItem('spring_sucursal_activa') || sucursalLocal || '';
 
   document.getElementById('user-name').textContent = nombre;
   document.getElementById('vendedor-nombre').textContent = nombre;
   document.getElementById('avatar').textContent = nombre.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase();
   document.getElementById('user-role').textContent = cargo === 'ADMIN' ? 'ADMINISTRADOR' : 'CAJERO';
   if (cargo !== 'ADMIN') document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+  if (cargo === 'ADMIN') document.getElementById('vendedor-sucursal').style.display = 'none';
 
   document.getElementById('busqueda').addEventListener('input', filtrarProductos);
   document.getElementById('categoria').addEventListener('change', filtrarProductos);
+  document.getElementById('sucursal-id').addEventListener('change', e => cambiarSucursalActiva(e.target.value));
+  document.getElementById('resumen-sucursal-id').addEventListener('change', e => cambiarSucursalActiva(e.target.value));
 
   function alerta(tipo, msg) {
     const el = document.getElementById('alert-box');
@@ -335,7 +344,8 @@
   }
 
   async function cargarTodo() {
-    await Promise.all([cargarCategorias(), cargarSucursales(), cargarClientes(), cargarProductos(), cargarMisVentas()]);
+    await Promise.all([cargarCategorias(), cargarSucursales(), cargarClientes(), cargarProductos()]);
+    await cargarMisVentas();
     renderCarrito();
   }
 
@@ -371,21 +381,56 @@
   async function cargarSucursales() {
     try {
       sucursales = await Sucursales.listar();
-      const sel = document.getElementById('sucursal-id');
-      sel.innerHTML = sucursales.map(s => `<option value="${s.id}">${s.nombre}</option>`).join('');
-      if (sucursalLocal) sel.value = sucursalLocal;
-      if (cargo !== 'ADMIN') sel.disabled = true;
-      const sucursal = sucursales.find(s => String(s.id) === String(sel.value));
-      document.getElementById('vendedor-sucursal').textContent = sucursal ? sucursal.nombre : 'Sin sucursal';
+      if (!sucursalActiva && sucursales.length) sucursalActiva = String(sucursales[0].id);
+      renderOpcionesSucursales();
+      aplicarSucursalActiva(sucursalActiva);
     } catch (e) {
-      document.getElementById('sucursal-id').innerHTML = '<option value="">Sin sucursal</option>';
+      ['sucursal-id', 'resumen-sucursal-id'].forEach(id => {
+        document.getElementById(id).innerHTML = '<option value="">Sin sucursal</option>';
+      });
       document.getElementById('vendedor-sucursal').textContent = 'Sin sucursal';
     }
   }
 
+  function renderOpcionesSucursales() {
+    const opciones = sucursales.map(s => `<option value="${s.id}">${s.nombre}</option>`).join('');
+    ['sucursal-id', 'resumen-sucursal-id'].forEach(id => {
+      const sel = document.getElementById(id);
+      sel.innerHTML = opciones || '<option value="">Sin sucursal</option>';
+      sel.disabled = cargo !== 'ADMIN';
+    });
+  }
+
+  function cambiarSucursalActiva(value) {
+    aplicarSucursalActiva(value);
+    if (cargo === 'ADMIN' && value) {
+      localStorage.setItem('spring_sucursal_activa', value);
+      cargarMisVentas();
+    }
+  }
+
+  function aplicarSucursalActiva(value) {
+    sucursalActiva = value || sucursalLocal || '';
+    if (sucursalActiva && sucursales.length && !sucursales.some(s => String(s.id) === String(sucursalActiva))) {
+      sucursalActiva = String(sucursales[0].id);
+    }
+    const sucursal = sucursales.find(s => String(s.id) === String(sucursalActiva));
+    ['sucursal-id', 'resumen-sucursal-id'].forEach(id => {
+      const sel = document.getElementById(id);
+      if (sel && sucursalActiva) sel.value = sucursalActiva;
+    });
+    document.getElementById('vendedor-sucursal').textContent = sucursal ? sucursal.nombre : 'Sin sucursal';
+  }
+
   async function cargarMisVentas() {
     try {
-      const ventas = cargo === 'ADMIN' ? await Ventas.hoy() : await Ventas.misVentas();
+      let ventas = cargo === 'ADMIN' && sucursalActiva
+        ? await Ventas.porSucursal(sucursalActiva)
+        : (cargo === 'ADMIN' ? await Ventas.hoy() : await Ventas.misVentas());
+      if (cargo === 'ADMIN' && sucursalActiva) {
+        const hoy = new Date().toDateString();
+        ventas = ventas.filter(v => new Date(v.fecha).toDateString() === hoy);
+      }
       document.getElementById('ventas-hoy').textContent = ventas.length;
       const body = document.getElementById('ventas-body');
       if (!ventas.length) {
@@ -515,7 +560,7 @@
     btn.textContent = 'Guardando...';
     const total = calcularTotal();
     const clienteId = document.getElementById('cliente-id').value;
-    const sucursalId = document.getElementById('sucursal-id').value || sucursalLocal;
+    const sucursalId = document.getElementById('sucursal-id').value || sucursalActiva || sucursalLocal;
     const venta = {
       total,
       estado: 'COMPLETADA',
