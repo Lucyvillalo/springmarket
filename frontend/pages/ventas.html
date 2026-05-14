@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spring Market - Ventas</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    body { background: #f4f7ef; color: #111827; }
+    .admin-shell { min-height: 100vh; display: grid; grid-template-columns: 255px 1fr; }
+    .admin-sidebar {
+      background: #b8f2c9; border-right: 1px solid rgba(34,197,94,.25);
+      padding: 22px 20px; display: flex; flex-direction: column; gap: 42px;
+      position: sticky; top: 0; height: 100vh;
+    }
+    .brand { display: flex; align-items: center; gap: 9px; color: #19c45b; font-weight: 800; font-size: 16px; }
+    .brand-mark {
+      width: 24px; height: 24px; border-radius: 50%; background: #16d45b; color: #fff;
+      display: grid; place-items: center; font-weight: 800; font-size: 15px;
+    }
+    .side-nav { display: flex; flex-direction: column; gap: 14px; margin-top: 34px; }
+    .side-item {
+      display: flex; align-items: center; gap: 11px; padding: 10px 7px;
+      color: #345246; text-decoration: none; font-size: 13px; border-radius: 8px;
+      border: 0; background: transparent; cursor: pointer; font-family: var(--font-main);
+    }
+    .side-item.active, .side-item:hover { color: #153826; background: rgba(255,255,255,.32); }
+    .side-icon { width: 18px; text-align: center; opacity: .8; }
+    .logout { margin-top: auto; color: #ef4444; }
+
+    .sales-main { padding: 24px 28px 36px; overflow-x: hidden; }
+    .topbar { display: flex; align-items: center; gap: 18px; margin-bottom: 22px; }
+    .top-actions { margin-left: auto; display: flex; align-items: center; gap: 18px; color: #34475d; }
+    .manager { display: flex; align-items: center; gap: 12px; padding-left: 18px; border-left: 1px solid #dbe3dc; }
+    .manager-name { font-size: 12px; font-weight: 800; line-height: 1.1; text-align: right; }
+    .manager-role { display: block; font-size: 8px; color: #64748b; letter-spacing: .08em; }
+    .avatar {
+      width: 34px; height: 34px; border-radius: 50%; border: 2px solid #dbeafe;
+      background: #1f2937; color: #fff; display: grid; place-items: center; font-weight: 800;
+    }
+    .page-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 20px; gap: 16px; }
+    .page-header h1 { font-size: 26px; font-weight: 800; margin: 0 0 3px; }
+    .page-header p { color: #64748b; font-size: 13px; margin: 0; }
+    .summary-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+    .summary-card {
+      background: #fff; border: 1px solid #e6ebef; border-radius: 10px;
+      padding: 16px 18px; box-shadow: 0 2px 10px rgba(15,23,42,.04);
+    }
+    .summary-label { color: #64748b; font-size: 11px; text-transform: uppercase; font-weight: 800; letter-spacing: .08em; }
+    .summary-value { font-size: 20px; font-weight: 900; color: #111827; margin-top: 4px; }
+    .sales-layout { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 18px; align-items: start; }
+    .panel {
+      background: #fff; border: 1px solid #e6ebef; border-radius: 12px;
+      padding: 20px; box-shadow: 0 2px 10px rgba(15,23,42,.04);
+    }
+    .panel-title { font-size: 15px; font-weight: 900; margin-bottom: 16px; }
+    .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+    .toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 18px; flex-wrap: wrap; }
+    .search-wrap { position: relative; flex: 1; min-width: 220px; }
+    .search-wrap input {
+      width: 100%; height: 36px; border: 1px solid #e2e8f0; border-radius: 8px;
+      padding: 0 12px 0 36px; font-size: 13px; background: #fff; color: #111827;
+    }
+    .search-wrap .action-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+    .toolbar select, .cart-select {
+      height: 36px; border: 1px solid #e2e8f0; border-radius: 8px;
+      padding: 0 12px; font-size: 13px; background: #fff; color: #374151;
+    }
+    .catalog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+    .product-card {
+      background: #fff; border: 1px solid #e6ebef; border-radius: 12px;
+      padding: 16px; box-shadow: 0 2px 8px rgba(15,23,42,.04); transition: box-shadow .15s, transform .15s;
+    }
+    .product-card:hover { box-shadow: 0 5px 18px rgba(15,23,42,.09); transform: translateY(-1px); }
+    .product-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .product-icon {
+      width: 42px; height: 42px; border-radius: 10px; background: #d1fae5; color: #059669;
+      display: grid; place-items: center; font-size: 22px; line-height: 1;
+    }
+    .product-name { font-size: 14px; font-weight: 900; margin-bottom: 4px; }
+    .product-meta { font-size: 11px; color: #9ca3af; margin-bottom: 10px; }
+    .product-price { font-size: 18px; font-weight: 900; color: #19c45b; margin-bottom: 10px; }
+    .stock-badge { display: inline-block; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 99px; background: #d1fae5; color: #065f46; }
+    .stock-low { background: #fef3c7; color: #92400e; }
+    .product-actions { display: grid; grid-template-columns: 76px 1fr; gap: 8px; margin-top: 12px; }
+    .qty-input { height: 34px; text-align: center; border-radius: 8px; }
+    .btn-add, .btn-confirm, .btn-clear, .btn-print, .btn-secondary-local {
+      border: 0; border-radius: 8px; padding: 9px 12px; font-size: 12px; font-weight: 800;
+      cursor: pointer; font-family: var(--font-main);
+    }
+    .btn-add, .btn-confirm { background: #19c45b; color: #fff; }
+    .btn-add:hover, .btn-confirm:hover { background: #15ad4e; }
+    .btn-clear { background: #fee2e2; color: #991b1b; }
+    .btn-print, .btn-secondary-local { background: #e0f2fe; color: #0369a1; }
+    .cart-panel { position: sticky; top: 20px; }
+    .cart-item { display: grid; grid-template-columns: 1fr 66px 72px 28px; gap: 8px; align-items: center; padding: 11px 0; border-bottom: 1px solid #f1f5f9; }
+    .cart-item:last-child { border-bottom: 0; }
+    .cart-name { font-size: 13px; font-weight: 900; }
+    .cart-meta { font-size: 11px; color: #94a3b8; }
+    .cart-subtotal { text-align: right; font-size: 13px; font-weight: 900; }
+    .remove-btn { width: 28px; height: 28px; border: 0; border-radius: 7px; background: #fee2e2; color: #991b1b; cursor: pointer; }
+    .total-row { display: flex; justify-content: space-between; align-items: center; margin: 12px 0; font-size: 13px; }
+    .grand-total { font-size: 24px; font-weight: 900; color: #19c45b; }
+    .checkout-grid { display: grid; gap: 12px; margin-top: 12px; }
+    .state-msg { text-align: center; padding: 40px 10px; color: #9ca3af; font-size: 14px; }
+    #alert-box { display: none; margin-bottom: 16px; padding: 11px 16px; border-radius: 8px; font-size: 13px; font-weight: 700; }
+    #alert-box.show { display: block; }
+    #alert-box.alert-success { background: #d1fae5; color: #065f46; }
+    #alert-box.alert-danger { background: #fee2e2; color: #991b1b; }
+    #alert-box.alert-warning { background: #fef3c7; color: #92400e; }
+    .receipt-modal {
+      display: none; position: fixed; inset: 0; background: rgba(15,23,42,.48); z-index: 200;
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .receipt-modal.open { display: flex; }
+    .receipt-card { background: #fff; border-radius: 14px; width: 560px; max-width: 95vw; padding: 24px; box-shadow: 0 20px 60px rgba(0,0,0,.18); }
+    .receipt-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+    .receipt-box { border: 1px dashed #d1d5db; border-radius: 10px; padding: 18px; background: #fff; }
+    .receipt-table { width: 100%; border-collapse: collapse; margin-top: 14px; }
+    .receipt-table th, .receipt-table td { padding: 8px 4px; border-bottom: 1px solid #eef2f7; font-size: 12px; text-align: left; }
+    .receipt-table th:nth-child(2), .receipt-table td:nth-child(2),
+    .receipt-table th:nth-child(3), .receipt-table td:nth-child(3) { text-align: right; }
+    @media(max-width: 980px) {
+      .admin-shell { grid-template-columns: 1fr; }
+      .admin-sidebar { position: static; height: auto; }
+      .sales-layout { grid-template-columns: 1fr; }
+      .summary-strip { grid-template-columns: 1fr; }
+      .cart-panel { position: static; }
+    }
+    @media print {
+      @page { margin: 10mm; }
+      html, body { background: #fff !important; height: auto !important; margin: 0 !important; }
+      .admin-shell { display: none !important; }
+      #receipt-modal {
+        display: block !important; position: static !important; inset: auto !important;
+        background: #fff !important; padding: 0 !important;
+      }
+      .receipt-card {
+        width: auto !important; max-width: none !important; padding: 0 !important;
+        box-shadow: none !important; border-radius: 0 !important;
+      }
+      #receipt-print-area {
+        display: block !important; position: static !important; width: auto !important;
+        border: 0 !important; box-shadow: none !important; padding: 0 !important;
+      }
+      .no-print, .receipt-actions, .receipt-card > .panel-head { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <div>
+      <div class="brand"><div class="brand-mark">S</div>Spring Market</div>
+      <nav class="side-nav">
+        <a class="side-item" href="dashboard.html"><span class="side-icon">📊</span> Dashboard</a>
+        <a class="side-item" href="productos.html"><span class="side-icon">📦</span> Productos</a>
+        <a class="side-item active" href="ventas.html"><span class="side-icon">🛒</span> Ventas</a>
+        <a class="side-item" href="reportes.html"><span class="side-icon">📋</span> Reportes</a>
+        <a class="side-item admin-only" href="sucursales.html"><span class="side-icon">🏪</span> Sucursales</a>
+        <a class="side-item admin-only" href="proveedores.html"><span class="side-icon">🚚</span> Proveedores</a>
+        <button class="side-item logout" onclick="Auth.logout()"><span class="side-icon">🚪</span> Cerrar sesion</button>
+      </nav>
+    </div>
+  </aside>
+
+  <main class="sales-main">
+    <div class="topbar">
+      <div class="top-actions">
+        <div class="manager">
+          <div>
+            <div class="manager-name" id="user-name">Usuario</div>
+            <span class="manager-role" id="user-role">ROL</span>
+          </div>
+          <div class="avatar" id="avatar">U</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-header">
+      <div>
+        <h1>Registrar venta</h1>
+        <p>Busca productos, arma el carrito, confirma el pago y genera el recibo.</p>
+      </div>
+      <button class="btn-secondary-local" onclick="cargarTodo()">Actualizar</button>
+    </div>
+
+    <div id="alert-box"></div>
+
+    <section class="summary-strip">
+      <div class="summary-card">
+        <div class="summary-label">Vendedor</div>
+        <div class="summary-value" id="vendedor-nombre">-</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Sucursal</div>
+        <div class="summary-value" id="vendedor-sucursal">-</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Ventas recientes</div>
+        <div class="summary-value" id="ventas-hoy">0</div>
+      </div>
+    </section>
+
+    <section class="sales-layout">
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title" style="margin-bottom:2px">Catalogo para venta</div>
+            <div style="color:#9ca3af;font-size:12px">Productos disponibles en inventario.</div>
+          </div>
+        </div>
+        <div class="toolbar">
+          <div class="search-wrap">
+            <span class="action-icon">🔍</span>
+            <input id="busqueda" type="search" placeholder="Buscar producto...">
+          </div>
+          <select id="categoria"><option value="">Todas las categorias</option></select>
+        </div>
+        <div id="productos-grid" class="catalog-grid"><div class="state-msg">Cargando productos...</div></div>
+      </div>
+
+      <aside class="panel cart-panel">
+        <div class="panel-head">
+          <div class="panel-title" style="margin:0">Venta actual</div>
+          <button class="btn-clear" onclick="vaciarCarrito()">Limpiar</button>
+        </div>
+        <div id="carrito-lista"></div>
+        <div class="total-row"><span>Productos</span><strong id="summary-items">0</strong></div>
+        <div class="total-row"><span>Total</span><span class="grand-total" id="carrito-total">$0.00</span></div>
+        <div class="checkout-grid">
+          <label for="cliente-id">Cliente registrado opcional</label>
+          <select class="cart-select" id="cliente-id"><option value="">Consumidor final</option></select>
+          <label for="sucursal-id">Sucursal</label>
+          <select class="cart-select" id="sucursal-id"></select>
+          <label for="metodo-pago">Metodo de pago</label>
+          <select class="cart-select" id="metodo-pago">
+            <option value="EFECTIVO">Efectivo</option>
+            <option value="TARJETA">Tarjeta</option>
+            <option value="TRANSFERENCIA">Transferencia</option>
+          </select>
+          <button class="btn-confirm" id="btn-confirmar" onclick="confirmarVenta()">Confirmar venta</button>
+        </div>
+      </aside>
+    </section>
+
+    <section class="panel" style="margin-top:18px">
+      <div class="panel-head">
+        <div class="panel-title" style="margin:0">Mis ventas recientes</div>
+        <button class="btn-secondary-local" onclick="cargarMisVentas()">Actualizar</button>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+          <tr>
+            <th>ID</th>
+            <th>Fecha</th>
+            <th>Cliente</th>
+            <th>Total</th>
+            <th>Estado</th>
+          </tr>
+          </thead>
+          <tbody id="ventas-body"><tr><td colspan="5" class="state-msg">Cargando ventas...</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="receipt-modal" id="receipt-modal">
+  <div class="receipt-card">
+    <div class="panel-head">
+      <div class="panel-title" style="margin:0">Recibo de venta</div>
+      <button class="remove-btn" onclick="cerrarRecibo()">x</button>
+    </div>
+    <div id="receipt-print-area" class="receipt-box"></div>
+    <div class="receipt-actions no-print">
+      <button class="btn-print" onclick="window.print()">Imprimir</button>
+      <button class="btn-confirm" onclick="cerrarRecibo()">Listo</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+  if (!Auth.requireAuth(['ADMIN', 'CAJERO'])) throw new Error('No autorizado');
+
+  const ICONS = {
+    box: '📦',
+    milk: '🥛',
+    meat: '🥩',
+    fruit: '🍎',
+    drink: '🥤',
+    bread: '🥖',
+    clean: '🧼',
+    snack: '🍪'
+  };
+
+  let productos = [];
+  let clientes = [];
+  let sucursales = [];
+  let carrito = JSON.parse(localStorage.getItem('spring_cart_cajero') || '[]');
+
+  const cargo = localStorage.getItem('cargo');
+  const nombre = localStorage.getItem('nombre') || 'Usuario';
+  const sucursalLocal = localStorage.getItem('sucursalId');
+
+  document.getElementById('user-name').textContent = nombre;
+  document.getElementById('vendedor-nombre').textContent = nombre;
+  document.getElementById('avatar').textContent = nombre.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase();
+  document.getElementById('user-role').textContent = cargo === 'ADMIN' ? 'ADMINISTRADOR' : 'CAJERO';
+  if (cargo !== 'ADMIN') document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+
+  document.getElementById('busqueda').addEventListener('input', filtrarProductos);
+  document.getElementById('categoria').addEventListener('change', filtrarProductos);
+
+  function alerta(tipo, msg) {
+    const el = document.getElementById('alert-box');
+    el.className = 'alert-' + tipo + ' show';
+    el.textContent = msg;
+    el.style.display = 'block';
+    setTimeout(() => { el.style.display = 'none'; }, 4000);
+  }
+
+  function iconForProduct(p) {
+    const cat = (p.categoria?.nombre || '').toLowerCase();
+    if (cat.includes('lact')) return ICONS.milk;
+    if (cat.includes('carne')) return ICONS.meat;
+    if (cat.includes('fruta') || cat.includes('verdura')) return ICONS.fruit;
+    if (cat.includes('bebida')) return ICONS.drink;
+    if (cat.includes('pan')) return ICONS.bread;
+    if (cat.includes('limpieza')) return ICONS.clean;
+    if (cat.includes('snack')) return ICONS.snack;
+    return ICONS.box;
+  }
+
+  async function cargarTodo() {
+    await Promise.all([cargarCategorias(), cargarSucursales(), cargarClientes(), cargarProductos(), cargarMisVentas()]);
+    renderCarrito();
+  }
+
+  async function cargarProductos() {
+    try {
+      productos = await Productos.listar();
+      filtrarProductos();
+    } catch (e) {
+      alerta('danger', e.message);
+    }
+  }
+
+  async function cargarCategorias() {
+    try {
+      const categorias = await Categorias.listar();
+      document.getElementById('categoria').innerHTML = '<option value="">Todas las categorias</option>' +
+        categorias.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
+    } catch (e) {
+      alerta('danger', e.message);
+    }
+  }
+
+  async function cargarClientes() {
+    try {
+      clientes = await Clientes.listar();
+      document.getElementById('cliente-id').innerHTML = '<option value="">Consumidor final</option>' +
+        clientes.map(c => `<option value="${c.id}">${c.nombre} - ${c.email}</option>`).join('');
+    } catch (e) {
+      document.getElementById('cliente-id').innerHTML = '<option value="">Consumidor final</option>';
+    }
+  }
+
+  async function cargarSucursales() {
+    try {
+      sucursales = await Sucursales.listar();
+      const sel = document.getElementById('sucursal-id');
+      sel.innerHTML = sucursales.map(s => `<option value="${s.id}">${s.nombre}</option>`).join('');
+      if (sucursalLocal) sel.value = sucursalLocal;
+      if (cargo !== 'ADMIN') sel.disabled = true;
+      const sucursal = sucursales.find(s => String(s.id) === String(sel.value));
+      document.getElementById('vendedor-sucursal').textContent = sucursal ? sucursal.nombre : 'Sin sucursal';
+    } catch (e) {
+      document.getElementById('sucursal-id').innerHTML = '<option value="">Sin sucursal</option>';
+      document.getElementById('vendedor-sucursal').textContent = 'Sin sucursal';
+    }
+  }
+
+  async function cargarMisVentas() {
+    try {
+      const ventas = cargo === 'ADMIN' ? await Ventas.hoy() : await Ventas.misVentas();
+      document.getElementById('ventas-hoy').textContent = ventas.length;
+      const body = document.getElementById('ventas-body');
+      if (!ventas.length) {
+        body.innerHTML = '<tr><td colspan="5" class="state-msg">Sin ventas registradas.</td></tr>';
+        return;
+      }
+      body.innerHTML = ventas.slice().reverse().map(v => `
+        <tr>
+          <td>#${v.id}</td>
+          <td>${formatDate(v.fecha)}</td>
+          <td>${v.cliente ? v.cliente.nombre : 'Consumidor final'}</td>
+          <td>${formatPrice(v.total)}</td>
+          <td>${formatEstado(v.estado)}</td>
+        </tr>
+      `).join('');
+    } catch (e) {
+      alerta('danger', e.message);
+    }
+  }
+
+  function filtrarProductos() {
+    const q = document.getElementById('busqueda').value.toLowerCase().trim();
+    const cat = document.getElementById('categoria').value;
+    const visibles = productos.filter(p => {
+      const coincideTexto = p.nombre.toLowerCase().includes(q);
+      const coincideCategoria = !cat || (p.categoria && String(p.categoria.id) === cat);
+      return coincideTexto && coincideCategoria && (p.stock || 0) > 0;
+    });
+    renderProductos(visibles);
+  }
+
+  function renderProductos(lista) {
+    const grid = document.getElementById('productos-grid');
+    if (!lista.length) {
+      grid.innerHTML = '<div class="state-msg">No hay productos disponibles.</div>';
+      return;
+    }
+    grid.innerHTML = lista.map(p => {
+      const stockClass = (p.stock || 0) <= 5 ? ' stock-low' : '';
+      return `
+        <article class="product-card">
+          <div class="product-top">
+            <div class="product-icon">${iconForProduct(p)}</div>
+            <span class="stock-badge${stockClass}">${p.stock || 0} disp.</span>
+          </div>
+          <div class="product-name">${p.nombre}</div>
+          <div class="product-meta">${p.categoria ? p.categoria.nombre : 'Sin categoria'}</div>
+          <div class="product-price">${formatPrice(p.precio)}</div>
+          <div class="product-actions">
+            <input class="qty-input" id="qty-${p.id}" type="number" min="1" max="${p.stock || 1}" value="1">
+            <button class="btn-add" onclick="agregarCarrito(${p.id})">Agregar</button>
+          </div>
+        </article>`;
+    }).join('');
+  }
+
+  function agregarCarrito(id) {
+    const producto = productos.find(p => p.id === id);
+    if (!producto) return;
+    const qty = parseInt(document.getElementById('qty-' + id).value) || 1;
+    if (qty < 1) return;
+    const item = carrito.find(i => i.id === id);
+    const nuevaCantidad = (item ? item.cantidad : 0) + qty;
+    if (nuevaCantidad > (producto.stock || 0)) {
+      alerta('warning', 'No hay suficiente stock para ' + producto.nombre);
+      return;
+    }
+    if (item) item.cantidad = nuevaCantidad;
+    else carrito.push({ id: producto.id, nombre: producto.nombre, precio: Number(producto.precio), stock: producto.stock || 0, categoria: producto.categoria?.nombre || 'Sin categoria', cantidad: qty });
+    guardarCarrito();
+  }
+
+  function cambiarCantidad(id, value) {
+    const item = carrito.find(i => i.id === id);
+    if (!item) return;
+    item.cantidad = Math.max(1, Math.min(parseInt(value) || 1, item.stock));
+    guardarCarrito();
+  }
+
+  function quitarItem(id) {
+    carrito = carrito.filter(i => i.id !== id);
+    guardarCarrito();
+  }
+
+  function vaciarCarrito() {
+    carrito = [];
+    guardarCarrito();
+  }
+
+  function guardarCarrito() {
+    localStorage.setItem('spring_cart_cajero', JSON.stringify(carrito));
+    renderCarrito();
+  }
+
+  function calcularTotal() {
+    return carrito.reduce((sum, item) => sum + item.precio * item.cantidad, 0);
+  }
+
+  function renderCarrito() {
+    const lista = document.getElementById('carrito-lista');
+    const total = calcularTotal();
+    const unidades = carrito.reduce((sum, item) => sum + item.cantidad, 0);
+    document.getElementById('summary-items').textContent = unidades;
+    document.getElementById('carrito-total').textContent = formatPrice(total);
+    document.getElementById('btn-confirmar').disabled = carrito.length === 0;
+    if (!carrito.length) {
+      lista.innerHTML = '<div class="state-msg">Agrega productos para iniciar la venta.</div>';
+      return;
+    }
+    lista.innerHTML = carrito.map(item => `
+      <div class="cart-item">
+        <div>
+          <div class="cart-name">${item.nombre}</div>
+          <div class="cart-meta">${formatPrice(item.precio)} c/u</div>
+        </div>
+        <input class="qty-input" type="number" min="1" max="${item.stock}" value="${item.cantidad}" onchange="cambiarCantidad(${item.id}, this.value)">
+        <div class="cart-subtotal">${formatPrice(item.precio * item.cantidad)}</div>
+        <button class="remove-btn" onclick="quitarItem(${item.id})">x</button>
+      </div>
+    `).join('');
+  }
+
+  async function confirmarVenta() {
+    if (!carrito.length) return;
+    const btn = document.getElementById('btn-confirmar');
+    btn.disabled = true;
+    btn.textContent = 'Guardando...';
+    const total = calcularTotal();
+    const clienteId = document.getElementById('cliente-id').value;
+    const sucursalId = document.getElementById('sucursal-id').value || sucursalLocal;
+    const venta = {
+      total,
+      estado: 'COMPLETADA',
+      cliente: clienteId ? { id: Number(clienteId) } : null,
+      sucursal: sucursalId ? { id: Number(sucursalId) } : null,
+      detalles: carrito.map(item => ({
+        producto: { id: item.id },
+        cantidad: item.cantidad,
+        precioUnitario: item.precio,
+        subtotal: parseFloat((item.precio * item.cantidad).toFixed(2))
+      })),
+      pagos: [{ metodoPago: document.getElementById('metodo-pago').value, monto: total }]
+    };
+
+    try {
+      const creada = await Ventas.registrar(venta);
+      mostrarRecibo(creada);
+      vaciarCarrito();
+      await Promise.all([cargarProductos(), cargarMisVentas()]);
+      alerta('success', 'Venta registrada correctamente.');
+    } catch (e) {
+      alerta('danger', e.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Confirmar venta';
+    }
+  }
+
+  function mostrarRecibo(venta) {
+    const detalles = venta.detalles || [];
+    const pago = venta.pagos && venta.pagos[0] ? venta.pagos[0].metodoPago : document.getElementById('metodo-pago').value;
+    const clienteSelect = document.getElementById('cliente-id');
+    const clienteSeleccionado = clienteSelect.value
+      ? clienteSelect.options[clienteSelect.selectedIndex].text.split(' - ')[0]
+      : 'Consumidor final';
+    const clienteNombre = venta.cliente && venta.cliente.nombre ? venta.cliente.nombre : clienteSeleccionado;
+    document.getElementById('receipt-print-area').innerHTML = `
+      <div style="text-align:center;margin-bottom:14px">
+        <h2 style="margin:0;color:#19c45b">Spring Market</h2>
+        <div style="color:#64748b;font-size:12px">Recibo de venta #${venta.id || ''}</div>
+      </div>
+      <p><strong>Fecha:</strong> ${formatDate(venta.fecha)}</p>
+      <p><strong>Vendedor:</strong> ${nombre}</p>
+      <p><strong>Cliente:</strong> ${clienteNombre}</p>
+      <p><strong>Pago:</strong> ${pago}</p>
+      <table class="receipt-table">
+        <thead><tr><th>Producto</th><th>Cant.</th><th>Subtotal</th></tr></thead>
+        <tbody>
+          ${detalles.map(d => `<tr>
+            <td>${d.producto?.nombre || 'Producto'}</td>
+            <td>${d.cantidad}</td>
+            <td>${formatPrice(d.subtotal)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      <div style="text-align:right;margin-top:16px;font-size:22px;font-weight:900;color:#19c45b">Total: ${formatPrice(venta.total || 0)}</div>
+    `;
+    document.getElementById('receipt-modal').classList.add('open');
+  }
+
+  function cerrarRecibo() {
+    document.getElementById('receipt-modal').classList.remove('open');
+  }
+
+  cargarTodo();
+</script>
+</body>
+</html>
