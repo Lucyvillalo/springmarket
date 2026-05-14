@@ -1,0 +1,569 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spring Market - Tienda</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    body { background: #f4f7ef; color: #111827; }
+    .store-shell { min-height: 100vh; display: grid; grid-template-columns: 245px 1fr; }
+    .store-sidebar {
+      background: #b8f2c9; border-right: 1px solid rgba(34,197,94,.25);
+      padding: 22px 20px; display: flex; flex-direction: column; gap: 34px;
+      position: sticky; top: 0; height: 100vh;
+    }
+    .brand { display: flex; align-items: center; gap: 9px; color: #19c45b; font-weight: 800; font-size: 16px; }
+    .brand-mark {
+      width: 24px; height: 24px; border-radius: 50%; background: #16d45b; color: #fff;
+      display: grid; place-items: center; font-weight: 800; font-size: 15px;
+    }
+    .side-nav { display: flex; flex-direction: column; gap: 14px; margin-top: 30px; }
+    .side-item {
+      display: flex; align-items: center; gap: 11px; padding: 10px 7px;
+      color: #345246; text-decoration: none; font-size: 13px; border-radius: 8px;
+      border: 0; background: transparent; cursor: pointer; font-family: var(--font-main);
+    }
+    .side-item.active, .side-item:hover { color: #153826; background: rgba(255,255,255,.32); }
+    .side-icon { width: 18px; text-align: center; opacity: .8; }
+    .logout { margin-top: auto; color: #ef4444; }
+    .store-main { padding: 24px 28px 36px; overflow-x: hidden; }
+    .topbar { display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-bottom: 22px; }
+    .cart-shortcut {
+      width: 40px; height: 40px; border: 0; border-radius: 10px; background: #19c45b; color: #fff;
+      display: grid; place-items: center; cursor: pointer; position: relative; box-shadow: 0 4px 14px rgba(25,196,91,.24);
+    }
+    .cart-shortcut .cart-count {
+      position: absolute; top: -7px; right: -7px; min-width: 20px; height: 20px; border-radius: 999px;
+      background: #111827; color: #fff; display: grid; place-items: center; font-size: 10px; font-weight: 900;
+    }
+    .cart-shortcut .cart-icon { font-size: 20px; line-height: 1; }
+    .customer { display: flex; align-items: center; gap: 12px; padding-left: 18px; border-left: 1px solid #dbe3dc; }
+    .customer-name { font-size: 12px; font-weight: 800; line-height: 1.1; text-align: right; }
+    .customer-role { display: block; font-size: 8px; color: #64748b; letter-spacing: .08em; }
+    .avatar {
+      width: 34px; height: 34px; border-radius: 50%; border: 2px solid #dbeafe;
+      background: #1f2937; color: #fff; display: grid; place-items: center; font-weight: 800;
+    }
+    .page-section { display: none; }
+    .page-section.active { display: block; }
+    .store-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; gap: 16px; }
+    .store-header h1 { font-size: 28px; font-weight: 800; margin: 0 0 4px; }
+    .store-header p { color: #64748b; font-size: 13px; margin: 0; }
+    .summary-pill {
+      background: #fff; border: 1px solid #e6ebef; border-radius: 999px;
+      padding: 9px 16px; font-size: 12px; font-weight: 800; color: #19c45b;
+      box-shadow: 0 2px 10px rgba(15,23,42,.04);
+    }
+    .hero-band {
+      background: #fff; border: 1px solid #e6ebef; border-radius: 12px;
+      padding: 24px; margin-bottom: 18px; display: grid; grid-template-columns: 1fr 260px;
+      gap: 20px; align-items: center; box-shadow: 0 2px 10px rgba(15,23,42,.04);
+    }
+    .hero-band h2 { font-size: 24px; margin: 0 0 8px; }
+    .hero-band p { color: #64748b; font-size: 14px; max-width: 540px; }
+    .hero-visual {
+      min-height: 130px; border-radius: 12px; background:
+        linear-gradient(135deg, #d1fae5 0%, #fef9c3 100%);
+      display: grid; place-items: center; color: #19c45b;
+    }
+    .hero-visual-inner {
+      display: grid; place-items: center; gap: 8px; color: #16a34a;
+      font-weight: 900; letter-spacing: .08em;
+    }
+    .hero-visual-icon { font-size: 56px; line-height: 1; }
+    .toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 18px; flex-wrap: wrap; }
+    .search-wrap { position: relative; flex: 1; min-width: 220px; max-width: 380px; }
+    .search-wrap input {
+      width: 100%; height: 36px; border: 1px solid #e2e8f0; border-radius: 8px;
+      padding: 0 12px 0 34px; font-size: 13px; background: #fff; color: #111827;
+    }
+    .search-wrap::before { content: ''; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; border: 2px solid #94a3b8; border-radius: 50%; pointer-events: none; }
+    .search-wrap::after { content: ''; position: absolute; left: 25px; top: 23px; width: 7px; height: 2px; background: #94a3b8; transform: rotate(45deg); pointer-events: none; }
+    .toolbar select {
+      height: 36px; border: 1px solid #e2e8f0; border-radius: 8px;
+      padding: 0 12px; font-size: 13px; background: #fff; color: #374151;
+    }
+    .catalog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; }
+    .product-card {
+      background: #fff; border: 1px solid #e6ebef; border-radius: 12px;
+      padding: 18px; box-shadow: 0 2px 8px rgba(15,23,42,.04);
+    }
+    .product-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .product-icon { width: 42px; height: 42px; border-radius: 10px; background: #d1fae5; color: #059669; display: grid; place-items: center; font-size: 22px; line-height: 1; }
+    .stock-badge { font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 99px; background: #d1fae5; color: #065f46; }
+    .stock-low { background: #fef3c7; color: #92400e; }
+    .product-name { font-size: 14px; font-weight: 800; margin-bottom: 3px; }
+    .product-meta { font-size: 11px; color: #9ca3af; margin-bottom: 10px; }
+    .product-price { font-size: 18px; font-weight: 900; color: #19c45b; margin-bottom: 12px; }
+    .product-actions { display: grid; grid-template-columns: 92px 1fr; gap: 8px; align-items: center; }
+    .qty-input { height: 34px; text-align: center; border-radius: 8px; }
+    .btn-add, .btn-checkout, .btn-clear, .btn-print {
+      border: 0; border-radius: 8px; padding: 9px 12px; font-size: 12px; font-weight: 800;
+      cursor: pointer; font-family: var(--font-main);
+    }
+    .btn-add, .btn-checkout { background: #19c45b; color: #fff; }
+    .btn-add:hover, .btn-checkout:hover { background: #15ad4e; }
+    .btn-clear { background: #fee2e2; color: #991b1b; }
+    .btn-print { background: #e0f2fe; color: #0369a1; }
+    .cart-layout { display: grid; grid-template-columns: 1fr 330px; gap: 18px; align-items: start; }
+    .panel {
+      background: #fff; border: 1px solid #e6ebef; border-radius: 12px;
+      padding: 20px; box-shadow: 0 2px 10px rgba(15,23,42,.04);
+    }
+    .panel-title { font-size: 15px; font-weight: 900; margin-bottom: 16px; }
+    .cart-item { display: grid; grid-template-columns: 1fr 76px 88px 28px; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
+    .cart-item:last-child { border-bottom: 0; }
+    .cart-name { font-size: 13px; font-weight: 800; }
+    .cart-meta { font-size: 11px; color: #94a3b8; }
+    .cart-price, .cart-subtotal { text-align: right; font-size: 13px; font-weight: 800; }
+    .remove-btn { width: 28px; height: 28px; border: 0; border-radius: 7px; background: #fee2e2; color: #991b1b; cursor: pointer; }
+    .total-row { display: flex; justify-content: space-between; align-items: center; margin: 12px 0; font-size: 13px; }
+    .grand-total { font-size: 24px; font-weight: 900; color: #19c45b; }
+    .checkout-field { margin-top: 12px; }
+    .checkout-field label { display: block; font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 6px; }
+    .checkout-field select {
+      width: 100%; height: 38px; border: 1px solid #e2e8f0; border-radius: 8px;
+      padding: 0 12px; font-size: 13px; background: #fff; color: #374151;
+    }
+    .orders-table { width: 100%; border-collapse: collapse; }
+    .orders-table th { font-size: 10px; color: #9ca3af; text-transform: uppercase; letter-spacing: .07em; }
+    .orders-table td { font-size: 13px; }
+    .state-msg { text-align: center; padding: 44px 10px; color: #9ca3af; font-size: 14px; }
+    #alert-box { display: none; margin-bottom: 16px; padding: 11px 16px; border-radius: 8px; font-size: 13px; font-weight: 700; }
+    #alert-box.show { display: block; }
+    #alert-box.alert-success { background: #d1fae5; color: #065f46; }
+    #alert-box.alert-danger { background: #fee2e2; color: #991b1b; }
+    @media(max-width: 900px) {
+      .store-shell { grid-template-columns: 1fr; }
+      .store-sidebar { position: static; height: auto; }
+      .hero-band, .cart-layout { grid-template-columns: 1fr; }
+    }
+    @media print {
+      body * { visibility: hidden; }
+      #receipt-panel, #receipt-panel * { visibility: visible; }
+      #receipt-panel { position: absolute; left: 0; top: 0; width: 100%; border: 0; box-shadow: none; }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+<div class="store-shell">
+  <aside class="store-sidebar">
+    <div>
+      <div class="brand"><div class="brand-mark">S</div>Spring Market</div>
+      <nav class="side-nav">
+        <button class="side-item active" data-section="inicio"><span class="side-icon">🏠</span> Inicio</button>
+        <button class="side-item" data-section="tienda"><span class="side-icon">🏪</span> Tienda</button>
+        <button class="side-item" data-section="carrito"><span class="side-icon">🛒</span> Carrito <span id="cart-count-nav"></span></button>
+        <button class="side-item" data-section="pedidos"><span class="side-icon">🧾</span> Mis pedidos</button>
+        <button class="side-item logout" onclick="Auth.logout()"><span class="side-icon">🚪</span> Cerrar sesion</button>
+      </nav>
+    </div>
+  </aside>
+
+  <main class="store-main">
+    <div class="topbar">
+      <button class="cart-shortcut" onclick="mostrarSeccion('carrito')" title="Abrir carrito">
+        <span class="cart-count" id="cart-count-bubble">0</span>
+        <span class="cart-icon">🛒</span>
+      </button>
+      <div class="customer">
+        <div>
+          <div class="customer-name" id="user-name">Cliente</div>
+          <span class="customer-role">CLIENTE</span>
+        </div>
+        <div class="avatar" id="avatar">C</div>
+      </div>
+    </div>
+
+    <div id="alert-box"></div>
+
+    <section class="page-section active" id="section-inicio">
+      <div class="store-header">
+        <div>
+          <h1>Inicio</h1>
+          <p>Bienvenido a la tienda en linea de Spring Market.</p>
+        </div>
+        <span class="summary-pill" id="home-cart-pill">0 productos en carrito</span>
+      </div>
+      <div class="hero-band">
+        <div>
+          <h2>Compra productos frescos y recibe tu pedido listo.</h2>
+          <p>Explora el catalogo disponible, agrega productos al carrito y confirma tu compra desde una sola pantalla.</p>
+          <button class="btn-checkout" style="margin-top:16px" onclick="mostrarSeccion('tienda')">Ver productos</button>
+        </div>
+        <div class="hero-visual">
+          <div class="hero-visual-inner">
+            <span class="hero-visual-icon">🏪</span>
+            <span>SM</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page-section" id="section-tienda">
+      <div class="store-header">
+        <div>
+          <h1>Tienda</h1>
+          <p>Busca productos disponibles y agregalos al carrito.</p>
+        </div>
+        <span class="summary-pill" id="store-total-pill">$0.00</span>
+      </div>
+      <div class="toolbar">
+        <div class="search-wrap">
+          <input type="text" id="search-input" placeholder="Buscar producto...">
+        </div>
+        <select id="cat-filter"><option value="">Todas las categorias</option></select>
+      </div>
+      <div class="catalog-grid" id="productos-grid">
+        <div class="state-msg">Cargando productos...</div>
+      </div>
+    </section>
+
+    <section class="page-section" id="section-carrito">
+      <div class="store-header">
+        <div>
+          <h1>Carrito</h1>
+          <p>Revisa tu pedido antes de comprar.</p>
+        </div>
+      </div>
+      <div class="cart-layout">
+        <div class="panel">
+          <div class="panel-title">Productos seleccionados</div>
+          <div id="cart-list"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Resumen</div>
+          <div class="total-row"><span>Productos</span><strong id="summary-items">0</strong></div>
+          <div class="total-row"><span>Subtotal</span><strong id="summary-subtotal">$0.00</strong></div>
+          <div class="total-row"><span>Total</span><span class="grand-total" id="summary-total">$0.00</span></div>
+          <div class="checkout-field">
+            <label for="payment-method">Metodo de pago</label>
+            <select id="payment-method">
+              <option value="EFECTIVO">Efectivo</option>
+              <option value="TARJETA">Tarjeta</option>
+              <option value="TRANSFERENCIA">Transferencia</option>
+            </select>
+          </div>
+          <button class="btn-checkout" style="width:100%;margin-top:12px" id="btn-buy">Comprar</button>
+          <button class="btn-clear" style="width:100%;margin-top:8px" id="btn-clear-cart">Vaciar carrito</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="page-section" id="section-pedidos">
+      <div class="store-header">
+        <div>
+          <h1>Mis pedidos</h1>
+          <p>Historial de compras realizadas con tu cuenta.</p>
+        </div>
+      </div>
+      <div class="panel">
+        <table class="orders-table">
+          <thead>
+          <tr>
+            <th>ID</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+            <th>Total</th>
+            <th>Detalle</th>
+          </tr>
+          </thead>
+          <tbody id="orders-body"><tr><td colspan="5" class="state-msg">Cargando pedidos...</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="page-section" id="section-recibo">
+      <div class="store-header no-print">
+        <div>
+          <h1>Compra confirmada</h1>
+          <p>Tu recibo esta listo para imprimir.</p>
+        </div>
+        <button class="btn-print" onclick="window.print()">Imprimir recibo</button>
+      </div>
+      <div class="panel" id="receipt-panel"></div>
+    </section>
+  </main>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+  if (!Auth.requireAuth(['CLIENTE'])) throw new Error('No autorizado');
+
+  const ICONS = {
+    box: '📦',
+    milk: '🥛',
+    meat: '🥩',
+    fruit: '🍎',
+    drink: '🥤',
+    bread: '🥖',
+    clean: '🧼',
+    snack: '🍪'
+  };
+
+  const nombre = localStorage.getItem('nombre') || 'Cliente';
+  const clienteId = localStorage.getItem('clienteId');
+  const CART_KEY = 'springmarket_cart_cliente_' + (clienteId || 'anon');
+  const state = { productos: [], categorias: [], carrito: cargarCarrito(), pedidos: [] };
+
+  document.getElementById('user-name').textContent = nombre;
+  document.getElementById('avatar').textContent = nombre.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase();
+
+  function cargarCarrito() {
+    try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; }
+    catch (e) { return []; }
+  }
+
+  function guardarCarrito() {
+    localStorage.setItem(CART_KEY, JSON.stringify(state.carrito));
+    renderCarrito();
+  }
+
+  function alerta(tipo, msg) {
+    const el = document.getElementById('alert-box');
+    el.className = 'alert-' + tipo + ' show';
+    el.textContent = msg;
+    el.style.display = 'block';
+    setTimeout(() => { el.style.display = 'none'; }, 3500);
+  }
+
+  function mostrarSeccion(name) {
+    document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+    document.getElementById('section-' + name).classList.add('active');
+    document.querySelectorAll('.side-item[data-section]').forEach(b => b.classList.toggle('active', b.dataset.section === name));
+    if (name === 'pedidos') cargarPedidos();
+  }
+
+  document.querySelectorAll('.side-item[data-section]').forEach(btn => {
+    btn.addEventListener('click', () => mostrarSeccion(btn.dataset.section));
+  });
+
+  function iconForProduct(producto) {
+    const cat = (producto.categoria?.nombre || '').toLowerCase();
+    if (cat.includes('lact')) return ICONS.milk;
+    if (cat.includes('carne')) return ICONS.meat;
+    if (cat.includes('fruta') || cat.includes('verdura')) return ICONS.fruit;
+    if (cat.includes('bebida')) return ICONS.drink;
+    if (cat.includes('pan')) return ICONS.bread;
+    if (cat.includes('limpieza')) return ICONS.clean;
+    if (cat.includes('snack')) return ICONS.snack;
+    return ICONS.box;
+  }
+
+  function renderProductos() {
+    const grid = document.getElementById('productos-grid');
+    const query = document.getElementById('search-input').value.trim().toLowerCase();
+    const catId = document.getElementById('cat-filter').value;
+    const productos = state.productos.filter(p => {
+      const stock = p.stock || 0;
+      const matchNombre = !query || p.nombre.toLowerCase().includes(query);
+      const matchCat = !catId || String(p.categoria?.id) === catId;
+      return stock > 0 && matchNombre && matchCat;
+    });
+
+    if (!productos.length) {
+      grid.innerHTML = '<div class="state-msg">No hay productos disponibles con esos filtros.</div>';
+      return;
+    }
+
+    grid.innerHTML = productos.map(p => {
+      const stockClass = (p.stock || 0) <= 5 ? ' stock-low' : '';
+      return `<div class="product-card">
+        <div class="product-top">
+          <div class="product-icon">${iconForProduct(p)}</div>
+          <span class="stock-badge${stockClass}">${p.stock || 0} disponibles</span>
+        </div>
+        <div class="product-name">${p.nombre}</div>
+        <div class="product-meta">${p.categoria?.nombre || 'Sin categoria'}</div>
+        <div class="product-price">${formatPrice(p.precio)}</div>
+        <div class="product-actions">
+          <input class="qty-input" id="qty-${p.id}" type="number" min="1" max="${p.stock || 1}" value="1">
+          <button class="btn-add" onclick="agregarAlCarrito(${p.id})">Agregar</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function agregarAlCarrito(id) {
+    const producto = state.productos.find(p => p.id === id);
+    const qty = parseInt(document.getElementById('qty-' + id).value) || 1;
+    if (!producto || qty < 1) return;
+    const actual = state.carrito.find(i => i.id === id);
+    const nuevaCantidad = (actual ? actual.cantidad : 0) + qty;
+    if (nuevaCantidad > (producto.stock || 0)) {
+      alerta('danger', 'No hay suficiente stock para ' + producto.nombre);
+      return;
+    }
+    if (actual) actual.cantidad = nuevaCantidad;
+    else state.carrito.push({
+      id: producto.id,
+      nombre: producto.nombre,
+      precio: parseFloat(producto.precio),
+      stock: producto.stock || 0,
+      categoria: producto.categoria?.nombre || 'Sin categoria',
+      cantidad: qty
+    });
+    guardarCarrito();
+    alerta('success', producto.nombre + ' agregado al carrito.');
+  }
+
+  function cambiarCantidad(id, value) {
+    const item = state.carrito.find(i => i.id === id);
+    if (!item) return;
+    const qty = Math.max(1, Math.min(parseInt(value) || 1, item.stock));
+    item.cantidad = qty;
+    guardarCarrito();
+  }
+
+  function quitarItem(id) {
+    state.carrito = state.carrito.filter(i => i.id !== id);
+    guardarCarrito();
+  }
+
+  function calcularTotal() {
+    return state.carrito.reduce((acc, item) => acc + (item.precio * item.cantidad), 0);
+  }
+
+  function renderCarrito() {
+    const list = document.getElementById('cart-list');
+    const total = calcularTotal();
+    const unidades = state.carrito.reduce((acc, item) => acc + item.cantidad, 0);
+    document.getElementById('cart-count-nav').textContent = unidades ? '(' + unidades + ')' : '';
+    document.getElementById('cart-count-bubble').textContent = unidades;
+    document.getElementById('home-cart-pill').textContent = unidades + ' productos en carrito';
+    document.getElementById('store-total-pill').textContent = formatPrice(total);
+    document.getElementById('summary-items').textContent = unidades;
+    document.getElementById('summary-subtotal').textContent = formatPrice(total);
+    document.getElementById('summary-total').textContent = formatPrice(total);
+    document.getElementById('btn-buy').disabled = state.carrito.length === 0;
+
+    if (!state.carrito.length) {
+      list.innerHTML = '<div class="state-msg">Tu carrito esta vacio.</div>';
+      return;
+    }
+
+    list.innerHTML = state.carrito.map(item => `
+      <div class="cart-item">
+        <div>
+          <div class="cart-name">${item.nombre}</div>
+          <div class="cart-meta">${item.categoria} - ${formatPrice(item.precio)} c/u</div>
+        </div>
+        <input class="qty-input" type="number" min="1" max="${item.stock}" value="${item.cantidad}" onchange="cambiarCantidad(${item.id}, this.value)">
+        <div class="cart-subtotal">${formatPrice(item.precio * item.cantidad)}</div>
+        <button class="remove-btn" onclick="quitarItem(${item.id})">x</button>
+      </div>
+    `).join('');
+  }
+
+  async function comprar() {
+    if (!state.carrito.length) return;
+    const total = calcularTotal();
+    const payload = {
+      total: total,
+      estado: 'COMPLETADA',
+      cliente: clienteId ? { id: parseInt(clienteId) } : null,
+      detalles: state.carrito.map(item => ({
+        producto: { id: item.id },
+        cantidad: item.cantidad,
+        precioUnitario: item.precio,
+        subtotal: parseFloat((item.precio * item.cantidad).toFixed(2))
+      })),
+      pagos: [{ metodoPago: document.getElementById('payment-method').value, monto: total }]
+    };
+
+    const btn = document.getElementById('btn-buy');
+    btn.disabled = true;
+    btn.textContent = 'Procesando...';
+    try {
+      const venta = await Ventas.registrar(payload);
+      state.carrito = [];
+      guardarCarrito();
+      renderRecibo(venta);
+      await cargarPedidos();
+      mostrarSeccion('recibo');
+      alerta('success', 'Compra registrada correctamente.');
+    } catch (err) {
+      alerta('danger', 'Error al registrar compra: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Comprar';
+    }
+  }
+
+  function renderRecibo(venta) {
+    const detalles = venta.detalles || [];
+    const fecha = venta.fecha ? formatDate(venta.fecha) : formatDate(new Date());
+    document.getElementById('receipt-panel').innerHTML = `
+      <div style="text-align:center;margin-bottom:18px">
+        <h2 style="margin:0;color:#19c45b">Spring Market</h2>
+        <p style="margin:4px 0;color:#64748b;font-size:13px">Recibo de compra #${venta.id || ''}</p>
+      </div>
+      <p><strong>Cliente:</strong> ${nombre}</p>
+      <p><strong>Fecha:</strong> ${fecha}</p>
+      <p><strong>Metodo de pago:</strong> ${(venta.pagos && venta.pagos[0]) ? venta.pagos[0].metodoPago : document.getElementById('payment-method').value}</p>
+      <table style="width:100%;border-collapse:collapse;margin-top:16px">
+        <thead><tr><th>Producto</th><th>Cant.</th><th>Precio</th><th>Subtotal</th></tr></thead>
+        <tbody>
+          ${detalles.map(d => `<tr>
+            <td>${d.producto?.nombre || 'Producto'}</td>
+            <td>${d.cantidad}</td>
+            <td>${formatPrice(d.precioUnitario)}</td>
+            <td>${formatPrice(d.subtotal)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      <div style="text-align:right;margin-top:18px;font-size:22px;font-weight:900;color:#19c45b">Total: ${formatPrice(venta.total || 0)}</div>
+    `;
+  }
+
+  async function cargarPedidos() {
+    try {
+      const pedidos = await Ventas.misCompras();
+      state.pedidos = pedidos || [];
+      const body = document.getElementById('orders-body');
+      if (!state.pedidos.length) {
+        body.innerHTML = '<tr><td colspan="5" class="state-msg">Aun no tienes pedidos.</td></tr>';
+        return;
+      }
+      body.innerHTML = state.pedidos.slice().reverse().map(v => `
+        <tr>
+          <td>#${v.id}</td>
+          <td>${formatDate(v.fecha)}</td>
+          <td>${formatEstado(v.estado)}</td>
+          <td><strong>${formatPrice(v.total || 0)}</strong></td>
+          <td>${(v.detalles || []).length} productos</td>
+        </tr>
+      `).join('');
+    } catch (err) {
+      document.getElementById('orders-body').innerHTML = '<tr><td colspan="5" class="state-msg">No se pudieron cargar los pedidos.</td></tr>';
+    }
+  }
+
+  async function cargar() {
+    try {
+      const [productos, categorias] = await Promise.all([Productos.disponibles(), Categorias.listar()]);
+      state.productos = productos || [];
+      state.categorias = categorias || [];
+      document.getElementById('cat-filter').innerHTML = '<option value="">Todas las categorias</option>' +
+        state.categorias.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
+      renderProductos();
+      renderCarrito();
+    } catch (err) {
+      document.getElementById('productos-grid').innerHTML = '<div class="state-msg">Error al cargar productos: ' + err.message + '</div>';
+    }
+  }
+
+  document.getElementById('search-input').addEventListener('input', renderProductos);
+  document.getElementById('cat-filter').addEventListener('change', renderProductos);
+  document.getElementById('btn-buy').addEventListener('click', comprar);
+  document.getElementById('btn-clear-cart').addEventListener('click', () => {
+    state.carrito = [];
+    guardarCarrito();
+  });
+
+  cargar();
+</script>
+</body>
+</html>

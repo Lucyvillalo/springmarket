@@ -83,7 +83,8 @@
         .prod-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
         .prod-icon {
           width: 42px; height: 42px; border-radius: 10px;
-          background: #d1fae5; display: grid; place-items: center; font-size: 20px;
+          background: #d1fae5; color: #059669; display: grid; place-items: center;
+          font-size: 22px; line-height: 1;
         }
         .prod-badge {
           font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 99px;
@@ -322,8 +323,27 @@
     }
 
     // ── Render grid ───────────────────────────────────
-    const ICONS = ['🥛','🥩','🍎','🥖','🧀','🍗','🥚','🌽','🧃','🍫'];
-    function iconForProduct(id) { return ICONS[(id || 0) % ICONS.length]; }
+    const PRODUCT_ICONS = {
+      box: '📦',
+      milk: '🥛',
+      meat: '🥩',
+      fruit: '🍎',
+      drink: '🥤',
+      bread: '🥖',
+      clean: '🧼',
+      snack: '🍪'
+    };
+    function iconForProduct(producto) {
+      const cat = (producto.categoria?.nombre || '').toLowerCase();
+      if (cat.includes('lact')) return PRODUCT_ICONS.milk;
+      if (cat.includes('carne')) return PRODUCT_ICONS.meat;
+      if (cat.includes('fruta') || cat.includes('verdura')) return PRODUCT_ICONS.fruit;
+      if (cat.includes('bebida')) return PRODUCT_ICONS.drink;
+      if (cat.includes('pan')) return PRODUCT_ICONS.bread;
+      if (cat.includes('limpieza')) return PRODUCT_ICONS.clean;
+      if (cat.includes('snack')) return PRODUCT_ICONS.snack;
+      return PRODUCT_ICONS.box;
+    }
 
     function stockInfo(stock) {
       if (!stock || stock === 0) return { label: 'Sin stock', cls: 'badge-out' };
@@ -359,7 +379,7 @@
         const cat = p.categoria?.nombre || 'Sin categoría';
         return `<div class="prod-card">
           <div class="prod-card-top">
-            <div class="prod-icon">${iconForProduct(p.id)}</div>
+            <div class="prod-icon">${iconForProduct(p)}</div>
             <span class="prod-badge ${cls}">${label}</span>
           </div>
           <div class="prod-name">${p.nombre}</div>
@@ -377,11 +397,9 @@
     // ── Cargar datos ──────────────────────────────────
     async function cargar() {
       try {
-        const [prods, cats, provs] = await Promise.all([
-          Productos.listar(),
-          Categorias.listar(),
-          Proveedores.listar()
-        ]);
+        const [prods, cats, provs] = cargo === 'ADMIN'
+          ? await Promise.all([Productos.listar(), Categorias.listar(), Proveedores.listar()])
+          : [await Productos.listar(), await Categorias.listar(), []];
         state.productos   = prods;
         state.categorias  = cats;
         state.proveedores = provs;

@@ -8,9 +8,14 @@ import org.springframework.transaction.annotation.Transactional;
 import sv.edu.udb.exception.ResourceNotFoundException;
 import sv.edu.udb.model.Cliente;
 import sv.edu.udb.model.Empleado;
+import sv.edu.udb.model.DetalleVenta;
+import sv.edu.udb.model.Producto;
+import sv.edu.udb.model.Sucursal;
 import sv.edu.udb.model.Venta;
 import sv.edu.udb.repository.ClienteRepository;
 import sv.edu.udb.repository.EmpleadoRepository;
+import sv.edu.udb.repository.ProductoRepository;
+import sv.edu.udb.repository.SucursalRepository;
 import sv.edu.udb.repository.VentaRepository;
 
 import java.math.BigDecimal;
@@ -28,6 +33,8 @@ public class VentaService {
     @Autowired private VentaRepository ventaRepository;
     @Autowired private EmpleadoRepository empleadoRepository;
     @Autowired private ClienteRepository clienteRepository;
+    @Autowired private ProductoRepository productoRepository;
+    @Autowired private SucursalRepository sucursalRepository;
 
     public List<Venta> listarTodos() {
         return ventaRepository.findAll();
@@ -42,7 +49,8 @@ public class VentaService {
         Venta venta = buscarPorId(id);
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean esAdmin = auth.getAuthorities().stream().anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
-        boolean esCajero = auth.getAuthorities().stream().anyMatch(a -> "ROLE_CAJERO".equals(a.getAuthority()));
+        boolean esCajero = auth.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_CAJERO".equals(a.getAuthority()) || "ROLE_ADMIN".equals(a.getAuthority()));
         boolean esCliente = auth.getAuthorities().stream().anyMatch(a -> "ROLE_CLIENTE".equals(a.getAuthority()));
 
         if (esAdmin) return venta;
@@ -79,6 +87,9 @@ public class VentaService {
     }
 
     public Venta registrar(Venta venta) {
+        asignarUsuarioActual(venta);
+        cargarRelaciones(venta);
+
         if (venta.getFecha() == null) {
             venta.setFecha(LocalDateTime.now());
         }
@@ -91,7 +102,8 @@ public class VentaService {
         if (venta.getPagos() == null) {
             venta.setPagos(new ArrayList<>());
         }
-        venta.getDetalles().forEach(detalle -> detalle.setVenta(venta));
+
+        venta.getDetalles().forEach(detalle -> prepararDetalle(detalle, venta));
         venta.getPagos().forEach(pago -> {
             pago.setVenta(venta);
             if (pago.getFechaPago() == null) pago.setFechaPago(LocalDateTime.now());
@@ -103,6 +115,73 @@ public class VentaService {
             venta.setTotal(total);
         }
         return ventaRepository.save(venta);
+    }
+
+    private void cargarRelaciones(Venta venta) {
+        if (venta.getCliente() != null && venta.getCliente().getId() != null) {
+            Cliente cliente = clienteRepository.findById(venta.getCliente().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado: " + venta.getCliente().getId()));
+            venta.setCliente(cliente);
+        }
+
+        if (venta.getEmpleado() != null && venta.getEmpleado().getId() != null) {
+            Empleado empleado = empleadoRepository.findById(venta.getEmpleado().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Empleado no encontrado: " + venta.getEmpleado().getId()));
+            venta.setEmpleado(empleado);
+        }
+
+        if (venta.getSucursal() != null && venta.getSucursal().getId() != null) {
+            Sucursal sucursal = sucursalRepository.findById(venta.getSucursal().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada: " + venta.getSucursal().getId()));
+            venta.setSucursal(sucursal);
+        }
+    }
+
+    private void asignarUsuarioActual(Venta venta) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || auth.getName() == null) return;
+
+        boolean esCajero = auth.getAuthorities().stream().anyMatch(a -> "ROLE_CAJERO".equals(a.getAuthority()));
+        boolean esCliente = auth.getAuthorities().stream().anyMatch(a -> "ROLE_CLIENTE".equals(a.getAuthority()));
+
+        if (esCajero && venta.getEmpleado() == null) {
+            Empleado empleado = empleadoActual();
+            venta.setEmpleado(empleado);
+            if (venta.getSucursal() == null && empleado.getSucursal() != null) {
+                venta.setSucursal(empleado.getSucursal());
+            }
+        }
+
+        if (esCliente && venta.getCliente() == null) {
+            venta.setCliente(clienteActual());
+        }
+    }
+
+    private void prepararDetalle(DetalleVenta detalle, Venta venta) {
+        if (detalle.getProducto() == null || detalle.getProducto().getId() == null) {
+            throw new RuntimeException("Cada detalle debe incluir un producto");
+        }
+        if (detalle.getCantidad() == null || detalle.getCantidad() <= 0) {
+            throw new RuntimeException("La cantidad debe ser mayor a cero");
+        }
+
+        Producto producto = productoRepository.findById(detalle.getProducto().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado: " + detalle.getProducto().getId()));
+
+        int stockActual = producto.getStock() == null ? 0 : producto.getStock();
+        if (stockActual < detalle.getCantidad()) {
+            throw new RuntimeException("Stock insuficiente para " + producto.getNombre());
+        }
+
+        detalle.setVenta(venta);
+        detalle.setProducto(producto);
+        if (detalle.getPrecioUnitario() == null) {
+            detalle.setPrecioUnitario(producto.getPrecio());
+        }
+        if (detalle.getSubtotal() == null) {
+            detalle.setSubtotal(detalle.getPrecioUnitario().multiply(BigDecimal.valueOf(detalle.getCantidad())));
+        }
+        producto.setStock(stockActual - detalle.getCantidad());
     }
 
     public Venta marcarDevolucion(Long id) {

@@ -88,6 +88,42 @@
     .status.pendiente { background: #fff7ed; color: #c46a00; border: 1px solid #fed7aa; }
     .status.cancelada, .status.devuelta { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
     .action-cell { white-space: nowrap; color: #8aa0b8; font-size: 12px; font-weight: 800; }
+    .pdf-btn {
+      border: 1px solid #bbf7d0; border-radius: 999px; background: #f0fdf4; color: #07883f;
+      padding: 7px 12px; font-size: 11px; font-weight: 900; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-main);
+      box-shadow: 0 1px 4px rgba(15,23,42,.04); transition: background .15s, transform .15s, border-color .15s;
+    }
+    .pdf-btn:hover { background: #dcfce7; border-color: #86efac; transform: translateY(-1px); }
+    .receipt-modal {
+      display: none; position: fixed; inset: 0; background: rgba(15,23,42,.48); z-index: 300;
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .receipt-modal.open { display: flex; }
+    .receipt-card {
+      background: #fff; width: 580px; max-width: 95vw; border-radius: 14px;
+      padding: 24px; box-shadow: 0 20px 60px rgba(0,0,0,.18);
+    }
+    .receipt-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .receipt-title { font-size: 17px; font-weight: 900; color: #111827; }
+    .receipt-close { border: 0; width: 34px; height: 34px; border-radius: 9px; background: #fee2e2; color: #991b1b; cursor: pointer; font-weight: 900; }
+    .receipt-box { border: 1px dashed #d1d5db; border-radius: 10px; padding: 18px; background: #fff; }
+    .receipt-table { width: 100%; border-collapse: collapse; margin-top: 14px; }
+    .receipt-table th, .receipt-table td { padding: 8px 4px; border-bottom: 1px solid #eef2f7; font-size: 12px; text-align: left; }
+    .receipt-table th:nth-child(2), .receipt-table td:nth-child(2),
+    .receipt-table th:nth-child(3), .receipt-table td:nth-child(3) { text-align: right; }
+    .receipt-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+    .print-btn {
+      border: 0; border-radius: 8px; background: #19c45b; color: #fff;
+      padding: 10px 15px; font-size: 12px; font-weight: 900; cursor: pointer;
+    }
+    .print-report-area { display: none; }
+    .print-report-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    .print-report-table th, .print-report-table td {
+      border-bottom: 1px solid #e5e7eb; padding: 8px 6px; font-size: 12px; text-align: left;
+    }
+    .print-report-table th { background: #f6f9ef; color: #334155; text-transform: uppercase; font-size: 10px; }
+    .print-report-total { text-align: right; margin-top: 16px; font-size: 18px; font-weight: 900; color: #19c45b; }
     .table-footer {
       display: flex; align-items: center; gap: 24px; padding: 18px 19px;
       color: #64748b; font-size: 12px; border-top: 1px solid #edf1f4;
@@ -106,6 +142,27 @@
       .topbar { flex-wrap: wrap; }
       .top-actions { margin-left: 0; width: 100%; justify-content: flex-end; }
     }
+    @media print {
+      @page { margin: 10mm; }
+      html, body { background: #fff !important; height: auto !important; margin: 0 !important; }
+      body.printing-receipt .admin-shell,
+      body.printing-report .admin-shell,
+      body.printing-report #receipt-modal { display: none !important; }
+      body.printing-receipt #receipt-modal {
+        display: block !important; position: static !important; inset: auto !important;
+        background: #fff !important; padding: 0 !important;
+      }
+      body.printing-receipt .receipt-card {
+        width: auto !important; max-width: none !important; padding: 0 !important;
+        box-shadow: none !important; border-radius: 0 !important;
+      }
+      body.printing-receipt #receipt-print-area {
+        display: block !important; border: 0 !important; padding: 0 !important;
+      }
+      body.printing-receipt .receipt-head,
+      body.printing-receipt .receipt-actions { display: none !important; }
+      body.printing-report #report-print-area { display: block !important; }
+    }
   </style>
 </head>
 <body>
@@ -114,13 +171,13 @@
     <div>
       <div class="brand"><span class="brand-mark">S</span> Spring Market</div>
       <nav class="side-nav" id="side-nav">
-        <a class="side-item" href="dashboard.html"><span class="side-icon">D</span> Dashboard</a>
-        <a class="side-item admin-only" href="productos.html"><span class="side-icon">P</span> Productos</a>
-        <a class="side-item admin-only" href="sucursales.html"><span class="side-icon">S</span> Sucursales</a>
-        <a class="side-item active" href="reportes.html"><span class="side-icon">R</span> Reportes</a>
+        <a class="side-item" href="dashboard.html"><span class="side-icon">📊</span> Dashboard</a>
+        <a class="side-item admin-only" href="productos.html"><span class="side-icon">📦</span> Productos</a>
+        <a class="side-item admin-only" href="sucursales.html"><span class="side-icon">🏪</span> Sucursales</a>
+        <a class="side-item active" href="reportes.html"><span class="side-icon">📋</span> Reportes</a>
       </nav>
     </div>
-    <button class="side-item logout" onclick="Auth.logout()"><span class="side-icon">X</span> Cerrar Sesion</button>
+    <button class="side-item logout" onclick="Auth.logout()"><span class="side-icon">🚪</span> Cerrar Sesion</button>
   </aside>
 
   <main class="report-main">
@@ -166,7 +223,7 @@
           <option value="">Todas las sucursales</option>
         </select>
         <input class="toolbar-input" id="date-filter" type="text" placeholder="20/03/2026 - 27/03/2026">
-        <button class="export-btn" onclick="window.print()">Export PDF</button>
+        <button class="export-btn" onclick="exportarReporte()">Export PDF</button>
       </div>
 
       <div class="table-wrapper">
@@ -202,6 +259,22 @@
       </div>
     </section>
   </main>
+</div>
+
+<div id="report-print-area" class="print-report-area"></div>
+
+<div class="receipt-modal" id="receipt-modal">
+  <div class="receipt-card">
+    <div class="receipt-head">
+      <div class="receipt-title">Comprobante de compra</div>
+      <button class="receipt-close" onclick="cerrarRecibo()">x</button>
+    </div>
+    <div id="receipt-print-area" class="receipt-box"></div>
+    <div class="receipt-actions">
+      <button class="export-btn" onclick="cerrarRecibo()">Cerrar</button>
+      <button class="print-btn" onclick="imprimirRecibo()">Imprimir PDF</button>
+    </div>
+  </div>
 </div>
 
 <script src="../js/api.js"></script>
@@ -300,7 +373,12 @@
           <td><span class="method">${metodo}</span></td>
           <td><span class="total">${formatPrice(v.total || 0)}</span></td>
           <td><span class="status ${estado}">${capitalize(v.estado || 'COMPLETADA')}</span></td>
-          <td class="action-cell">Ver PDF</td>
+          <td class="action-cell">
+            <button class="pdf-btn" onclick="abrirRecibo(${v.id})" title="Ver comprobante PDF">
+              📄
+              PDF
+            </button>
+          </td>
         </tr>`;
       }).join('');
     }
@@ -319,6 +397,119 @@
   function capitalize(value) {
     return String(value).toLowerCase().replace(/^\w/, c => c.toUpperCase());
   }
+
+  function totalFiltrado() {
+    return state.filtered
+      .filter(v => String(v.estado || '').toUpperCase() !== 'CANCELADA')
+      .reduce((sum, v) => sum + Number(v.total || 0), 0);
+  }
+
+  function nombrePersonaReporte(venta) {
+    if (cargo === 'CLIENTE') return venta.cliente?.nombre || nombre;
+    return venta.empleado?.nombre || nombre;
+  }
+
+  function exportarReporte() {
+    const titulo = document.getElementById('page-title').textContent;
+    const contexto = document.getElementById('summary-context').textContent;
+    const filas = state.filtered;
+
+    document.getElementById('report-print-area').innerHTML = `
+      <div style="text-align:center;margin-bottom:14px">
+        <h1 style="margin:0;color:#111827">Spring Market</h1>
+        <p style="margin:4px 0;color:#64748b">${titulo} - ${contexto}</p>
+        <p style="margin:0;color:#64748b;font-size:12px">Generado: ${formatDate(new Date())}</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0">
+        <div><strong>Ventas:</strong> ${filas.length}</div>
+        <div><strong>Monto:</strong> ${formatPrice(totalFiltrado())}</div>
+        <div><strong>Usuario:</strong> ${nombre}</div>
+      </div>
+      <table class="print-report-table">
+        <thead>
+          <tr>
+            <th>Venta</th>
+            <th>Sucursal</th>
+            <th>Fecha</th>
+            <th>${cargo === 'CLIENTE' ? 'Cliente' : 'Vendedor'}</th>
+            <th>Metodo</th>
+            <th>Total</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${filas.length ? filas.map(v => `<tr>
+            <td>#${v.id}</td>
+            <td>${v.sucursal?.nombre || 'Sin sucursal'}</td>
+            <td>${formatDateOnly(v.fecha)}</td>
+            <td>${nombrePersonaReporte(v)}</td>
+            <td>${v.pagos?.[0]?.metodoPago || 'EFECTIVO'}</td>
+            <td>${formatPrice(v.total || 0)}</td>
+            <td>${v.estado || 'COMPLETADA'}</td>
+          </tr>`).join('') : '<tr><td colspan="7">No hay ventas para imprimir.</td></tr>'}
+        </tbody>
+      </table>
+      <div class="print-report-total">Total general: ${formatPrice(totalFiltrado())}</div>
+    `;
+
+    document.body.classList.remove('printing-receipt');
+    document.body.classList.add('printing-report');
+    window.print();
+  }
+
+  function abrirRecibo(id) {
+    const venta = state.ventas.find(v => Number(v.id) === Number(id));
+    if (!venta) return;
+
+    const personaLabel = cargo === 'CLIENTE' ? 'Cliente' : 'Vendedor';
+    const persona = cargo === 'CLIENTE'
+      ? (venta.cliente?.nombre || nombre)
+      : (venta.empleado?.nombre || nombre);
+    const cliente = venta.cliente?.nombre || (cargo === 'CLIENTE' ? nombre : 'Consumidor final');
+    const metodo = venta.pagos?.[0]?.metodoPago || 'EFECTIVO';
+    const detalles = venta.detalles || [];
+
+    document.getElementById('receipt-print-area').innerHTML = `
+      <div style="text-align:center;margin-bottom:14px">
+        <h2 style="margin:0;color:#19c45b">Spring Market</h2>
+        <div style="color:#64748b;font-size:12px">Comprobante de venta #${venta.id}</div>
+      </div>
+      <p><strong>Fecha:</strong> ${formatDate(venta.fecha)}</p>
+      <p><strong>Sucursal:</strong> ${venta.sucursal?.nombre || 'Sin sucursal'}</p>
+      <p><strong>${personaLabel}:</strong> ${persona}</p>
+      <p><strong>Cliente:</strong> ${cliente}</p>
+      <p><strong>Metodo de pago:</strong> ${metodo}</p>
+      <p><strong>Estado:</strong> ${venta.estado || 'COMPLETADA'}</p>
+      <table class="receipt-table">
+        <thead><tr><th>Producto</th><th>Cant.</th><th>Subtotal</th></tr></thead>
+        <tbody>
+          ${detalles.length ? detalles.map(d => `<tr>
+            <td>${d.producto?.nombre || 'Producto'}</td>
+            <td>${d.cantidad || 0}</td>
+            <td>${formatPrice(d.subtotal || 0)}</td>
+          </tr>`).join('') : '<tr><td colspan="3">Sin detalle disponible.</td></tr>'}
+        </tbody>
+      </table>
+      <div style="text-align:right;margin-top:16px;font-size:22px;font-weight:900;color:#19c45b">Total: ${formatPrice(venta.total || 0)}</div>
+    `;
+    document.getElementById('receipt-modal').classList.add('open');
+  }
+
+  function imprimirRecibo() {
+    document.body.classList.remove('printing-report');
+    document.body.classList.add('printing-receipt');
+    window.print();
+  }
+
+  function cerrarRecibo() {
+    document.getElementById('receipt-modal').classList.remove('open');
+    document.body.classList.remove('printing-receipt');
+  }
+
+  window.addEventListener('afterprint', () => {
+    document.body.classList.remove('printing-report');
+    document.body.classList.remove('printing-receipt');
+  });
 
   document.getElementById('sale-filter').addEventListener('input', aplicarFiltros);
   document.getElementById('branch-filter').addEventListener('change', aplicarFiltros);
