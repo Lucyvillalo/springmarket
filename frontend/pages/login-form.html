@@ -46,11 +46,28 @@
     .lf-divider a:hover { background: var(--green-50); border-color: var(--green-500); color: var(--green-700); }
     .lf-register { text-align: center; margin-top: 20px; font-size: 13px; color: var(--gray-600); }
     .lf-register a { color: var(--green-700); font-weight: 600; text-decoration: none; }
+    .login-modal { display:none; position:fixed; inset:0; background:rgba(17,24,39,.48); z-index:20; align-items:center; justify-content:center; padding:20px; }
+    .login-modal.open { display:flex; }
+    .login-modal-card { width:min(560px, 100%); max-height:90vh; overflow:auto; background:#fff; border-radius:12px; box-shadow:0 22px 70px rgba(17,24,39,.22); padding:26px; }
+    .login-modal-head { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:18px; }
+    .login-modal-title { font-size:21px; font-weight:800; color:var(--gray-800); }
+    .login-modal-sub { margin-top:4px; color:var(--gray-600); font-size:13px; line-height:1.6; }
+    .modal-close { border:0; width:32px; height:32px; border-radius:8px; cursor:pointer; background:#fee2e2; color:#991b1b; font-weight:800; }
+    .faq-list { display:grid; gap:12px; }
+    .faq-item { border:1px solid var(--gray-200); border-radius:8px; padding:14px; background:#fbfdf9; }
+    .faq-item strong { display:block; margin-bottom:6px; color:var(--gray-800); font-size:14px; }
+    .faq-item p { margin:0; color:var(--gray-600); line-height:1.6; font-size:13px; }
+    .reset-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:16px; }
+    .btn-light { border:1px solid var(--gray-200); border-radius:50px; padding:11px 18px; background:#fff; color:var(--gray-600); font-weight:700; cursor:pointer; }
+    .btn-reset { border:0; border-radius:50px; padding:11px 18px; background:var(--green-700); color:#fff; font-weight:700; cursor:pointer; }
+    .btn-reset:disabled { opacity:.6; cursor:not-allowed; }
     @media(max-width: 800px) {
       .lf-wrapper { flex-direction: column; }
       .lf-left { padding: 40px 24px; }
       .lf-right { flex: none; padding: 40px 24px; box-shadow: none; }
       .lf-illustration { width: 100%; }
+      .reset-actions { flex-direction:column-reverse; }
+      .btn-light, .btn-reset { width:100%; }
     }
   </style>
 </head>
@@ -140,7 +157,7 @@
           <input type="password" id="password" placeholder="••••••••">
         </div>
       </div>
-      <a href="#" class="lf-forgot">¿Olvidaste tu contraseña?</a>
+      <a href="#" class="lf-forgot" onclick="abrirReset(event, 'empleado')">¿Olvidaste tu contraseña?</a>
       <button class="btn-login-full" id="btn-emp" onclick="loginEmpleado()">Iniciar Sesión →</button>
     </div>
 
@@ -160,20 +177,82 @@
           <input type="password" id="pass-cliente" placeholder="••••••••">
         </div>
       </div>
-      <a href="#" class="lf-forgot">¿Olvidaste tu contraseña?</a>
+      <a href="#" class="lf-forgot" onclick="abrirReset(event, 'cliente')">¿Olvidaste tu contraseña?</a>
       <button class="btn-login-full" id="btn-cli" onclick="loginCliente()">Iniciar Sesión →</button>
       <div class="lf-register">¿No tienes cuenta? <a href="registro.html">Regístrate</a></div>
     </div>
 
     <div class="lf-divider" style="margin-top:12px">
-      <a href="#">
+      <a href="soporte.html">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.01 1.18 2 2 0 012 .01h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg>
         Soporte IT
       </a>
-      <a href="#">
+      <a href="#" onclick="abrirAyuda(event)">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
         Ayuda
       </a>
+    </div>
+  </div>
+</div>
+
+<div class="login-modal" id="modal-ayuda" aria-hidden="true">
+  <div class="login-modal-card">
+    <div class="login-modal-head">
+      <div>
+        <div class="login-modal-title">Preguntas frecuentes</div>
+        <div class="login-modal-sub">Guia rapida para resolver dudas comunes antes de iniciar sesion.</div>
+      </div>
+      <button class="modal-close" type="button" onclick="cerrarModal('modal-ayuda')">x</button>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <strong>No puedo iniciar sesion, que reviso primero?</strong>
+        <p>Confirma que seleccionaste el tipo de usuario correcto en el portal, escribe tu usuario o correo sin espacios y verifica que el servidor Spring Boot este activo en el puerto 8085.</p>
+      </div>
+      <div class="faq-item">
+        <strong>Cual es la diferencia entre empleado, administrador y cliente?</strong>
+        <p>Empleado accede a ventas e inventario, administrador gestiona catalogos y reportes, y cliente entra a la tienda para consultar productos y compras.</p>
+      </div>
+      <div class="faq-item">
+        <strong>Como reporto un problema tecnico?</strong>
+        <p>Usa el boton Soporte IT, elige el tipo de problema, selecciona la sucursal si aplica y describe en que pantalla ocurrio el error.</p>
+      </div>
+      <div class="faq-item">
+        <strong>Que hago si olvide mi contrasena?</strong>
+        <p>Presiona Olvidaste tu contrasena, escribe tu usuario o correo registrado y define una nueva contrasena segura.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="login-modal" id="modal-reset" aria-hidden="true">
+  <div class="login-modal-card">
+    <div class="login-modal-head">
+      <div>
+        <div class="login-modal-title">Restablecer contrasena</div>
+        <div class="login-modal-sub" id="reset-subtitle">Ingresa tu usuario registrado y una nueva contrasena.</div>
+      </div>
+      <button class="modal-close" type="button" onclick="cerrarModal('modal-reset')">x</button>
+    </div>
+    <div id="reset-alert" class="alert"></div>
+    <input type="hidden" id="reset-tipo" value="empleado">
+    <div class="form-group">
+      <label id="reset-label">Usuario</label>
+      <input id="reset-identificador" autocomplete="username">
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Nueva contrasena</label>
+        <input type="password" id="reset-password" autocomplete="new-password" placeholder="Minimo 6 caracteres">
+      </div>
+      <div class="form-group">
+        <label>Confirmar contrasena</label>
+        <input type="password" id="reset-password2" autocomplete="new-password">
+      </div>
+    </div>
+    <div class="reset-actions">
+      <button class="btn-light" type="button" onclick="cerrarModal('modal-reset')">Cancelar</button>
+      <button class="btn-reset" type="button" id="btn-reset" onclick="restablecerPassword()">Actualizar contrasena</button>
     </div>
   </div>
 </div>
@@ -202,6 +281,79 @@
     el.className = 'alert alert-' + tipo + ' show';
     el.textContent = msg;
     setTimeout(() => el.classList.remove('show'), 5000);
+  }
+
+  function abrirAyuda(event) {
+    event.preventDefault();
+    abrirModal('modal-ayuda');
+  }
+
+  function abrirReset(event, tipo) {
+    event.preventDefault();
+    document.getElementById('reset-tipo').value = tipo;
+    document.getElementById('reset-label').textContent = tipo === 'cliente' ? 'Correo electronico' : 'Usuario';
+    document.getElementById('reset-subtitle').textContent = tipo === 'cliente'
+      ? 'Ingresa el correo de tu cuenta cliente y define una nueva contrasena.'
+      : 'Ingresa tu usuario de empleado o administrador y define una nueva contrasena.';
+    document.getElementById('reset-identificador').value = tipo === 'cliente'
+      ? document.getElementById('email').value.trim()
+      : document.getElementById('username').value.trim();
+    document.getElementById('reset-password').value = '';
+    document.getElementById('reset-password2').value = '';
+    document.getElementById('reset-alert').className = 'alert';
+    document.getElementById('reset-alert').textContent = '';
+    abrirModal('modal-reset');
+  }
+
+  function abrirModal(id) {
+    const modal = document.getElementById(id);
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+  }
+
+  function cerrarModal(id) {
+    const modal = document.getElementById(id);
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+  }
+
+  function mostrarResetAlerta(tipo, msg) {
+    const el = document.getElementById('reset-alert');
+    el.className = 'alert alert-' + tipo + ' show';
+    el.textContent = msg;
+  }
+
+  async function restablecerPassword() {
+    const tipo = document.getElementById('reset-tipo').value;
+    const identificador = document.getElementById('reset-identificador').value.trim();
+    const password = document.getElementById('reset-password').value;
+    const password2 = document.getElementById('reset-password2').value;
+
+    if (!identificador || !password) return mostrarResetAlerta('danger', 'Completa todos los campos');
+    if (password.length < 6) return mostrarResetAlerta('danger', 'La contrasena debe tener al menos 6 caracteres');
+    if (password !== password2) return mostrarResetAlerta('danger', 'Las contrasenas no coinciden');
+
+    const btn = document.getElementById('btn-reset');
+    btn.disabled = true;
+    btn.textContent = 'Actualizando...';
+    try {
+      const res = await fetch('http://localhost:8085/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tipo, identificador, password })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || data.error || 'No se pudo actualizar la contrasena');
+      mostrarResetAlerta('success', data.message || 'Contrasena actualizada correctamente');
+      if (tipo === 'cliente') document.getElementById('email').value = identificador;
+      else document.getElementById('username').value = identificador;
+      setTimeout(() => cerrarModal('modal-reset'), 1300);
+    } catch (e) {
+      mostrarResetAlerta('danger', e.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Actualizar contrasena';
+    }
   }
 
   // ── Login de Empleado / Admin ──
@@ -296,8 +448,17 @@
   // Permitir Enter para enviar el formulario
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Enter') {
+      if (document.getElementById('modal-reset').classList.contains('open')) {
+        restablecerPassword();
+        return;
+      }
+      if (document.getElementById('modal-ayuda').classList.contains('open')) return;
       if (rol === 'cliente') loginCliente();
       else loginEmpleado();
+    }
+    if (e.key === 'Escape') {
+      cerrarModal('modal-ayuda');
+      cerrarModal('modal-reset');
     }
   });
 </script>

@@ -20,13 +20,11 @@ public class SucursalController {
     private SucursalService sucursalService;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN','CAJERO')")
     public ResponseEntity<List<Sucursal>> listar() {
         return ResponseEntity.ok(sucursalService.listarTodos());
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','CAJERO')")
     public ResponseEntity<Sucursal> buscar(@PathVariable Long id) {
         return ResponseEntity.ok(sucursalService.buscarPorId(id));
     }

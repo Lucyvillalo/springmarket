@@ -14,6 +14,7 @@ USE springmarket;
 -- 2. Eliminar tablas en orden inverso (por claves foráneas)
 DROP TABLE IF EXISTS detalle_venta;
 DROP TABLE IF EXISTS pago;
+DROP TABLE IF EXISTS soporte_reporte;
 DROP TABLE IF EXISTS venta;
 DROP TABLE IF EXISTS inventario;
 DROP TABLE IF EXISTS producto;
@@ -66,6 +67,25 @@ CREATE TABLE cliente (
   telefono    VARCHAR(20),
   direccion   VARCHAR(255),
   password    VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE soporte_reporte (
+  id                  BIGINT AUTO_INCREMENT PRIMARY KEY,
+  titulo              VARCHAR(150) NOT NULL,
+  tipo_problema       VARCHAR(50) NOT NULL,
+  descripcion         TEXT NOT NULL,
+  prioridad           VARCHAR(20),
+  estado              VARCHAR(20) DEFAULT 'PENDIENTE',
+  fecha_creacion      DATETIME DEFAULT CURRENT_TIMESTAMP,
+  id_cliente          BIGINT NULL,
+  id_empleado         BIGINT NULL,
+  id_sucursal         BIGINT NULL,
+  CONSTRAINT fk_soporte_cliente  FOREIGN KEY (id_cliente)  REFERENCES cliente(id_cliente),
+  CONSTRAINT fk_soporte_empleado FOREIGN KEY (id_empleado) REFERENCES empleado(id_empleado),
+  CONSTRAINT fk_soporte_sucursal FOREIGN KEY (id_sucursal) REFERENCES sucursal(id_sucursal),
+  CONSTRAINT chk_soporte_estado CHECK (estado IN ('PENDIENTE', 'EN_PROCESO', 'RESUELTO')),
+  CONSTRAINT chk_soporte_prioridad CHECK (prioridad IS NULL OR prioridad IN ('BAJA', 'MEDIA', 'ALTA')),
+  CONSTRAINT chk_soporte_tipo CHECK (tipo_problema IN ('Inventario', 'Ventas', 'Productos', 'Login', 'Facturación', 'Sistema', 'Otro'))
 );
 
 CREATE TABLE producto (

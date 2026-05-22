@@ -28,11 +28,6 @@
       flex:1; background:#fff; display:flex; flex-direction:column;
       justify-content:center; padding:60px 64px;
     }
-    .reg-role-badge {
-      display:inline-flex; align-items:center; gap:8px; background:var(--green-50);
-      border:1px solid var(--green-200); border-radius:50px; padding:6px 16px;
-      font-size:12px; font-weight:600; color:var(--green-700); margin-bottom:28px;
-    }
     .reg-form-title { font-size:26px; font-weight:700; color:var(--gray-800); margin-bottom:6px; }
     .reg-form-sub   { font-size:14px; color:var(--gray-400); margin-bottom:32px; }
 
@@ -45,6 +40,17 @@
 
     .reg-login { text-align:center; margin-top:20px; font-size:13px; color:var(--gray-600); }
     .reg-login a { color:var(--green-700); font-weight:700; text-decoration:none; }
+    .terms-modal { display:none; position:fixed; inset:0; background:rgba(17,24,39,.48); z-index:20; align-items:center; justify-content:center; padding:20px; }
+    .terms-modal.open { display:flex; }
+    .terms-card { width:min(720px, 100%); max-height:88vh; overflow:auto; background:#fff; border-radius:12px; padding:26px; box-shadow:0 22px 70px rgba(17,24,39,.22); }
+    .terms-head { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:16px; }
+    .terms-title { font-size:22px; font-weight:800; color:var(--gray-800); }
+    .terms-date { margin-top:4px; color:var(--gray-400); font-size:12px; }
+    .terms-close { border:0; width:32px; height:32px; border-radius:8px; cursor:pointer; background:#fee2e2; color:#991b1b; font-weight:800; }
+    .terms-body { color:var(--gray-600); font-size:13px; line-height:1.7; }
+    .terms-body h3 { color:var(--gray-800); font-size:15px; margin:18px 0 6px; }
+    .terms-actions { display:flex; justify-content:flex-end; margin-top:18px; }
+    .terms-accept { border:0; border-radius:50px; padding:11px 18px; background:var(--green-700); color:#fff; font-weight:700; cursor:pointer; }
 
     @media(max-width:800px){ .reg-wrapper{flex-direction:column;} .reg-left{flex:none;padding:40px 24px;} .reg-right{padding:40px 24px;} }
   </style>
@@ -64,12 +70,8 @@
 
   <!-- Derecha formulario -->
   <div class="reg-right">
-    <div class="reg-role-badge">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      ROL: EMPLEADO / VENDEDOR
-    </div>
     <div class="reg-form-title">Crear nueva cuenta</div>
-    <div class="reg-form-sub">Ingresa tus datos para comenzar a operar.</div>
+    <div class="reg-form-sub">Ingresa tus datos para crear tu cuenta.</div>
 
     <div id="alert-box" class="alert"></div>
 
@@ -103,7 +105,7 @@
 
     <label style="display:flex;align-items:center;gap:10px;font-size:13px;text-transform:none;letter-spacing:0;color:var(--gray-600);cursor:pointer;margin-bottom:16px">
       <input type="checkbox" id="terminos" style="width:auto;accent-color:var(--green-700)">
-      Acepto los <a href="#" style="color:var(--green-700);font-weight:600">Términos y Condiciones</a>
+      Acepto los <a href="#" onclick="abrirTerminos(event)" style="color:var(--green-700);font-weight:600">Terminos y Condiciones</a>
     </label>
 
     <button class="btn-crear" onclick="registrar()">Crear Cuenta →</button>
@@ -112,8 +114,52 @@
   </div>
 </div>
 
+<div class="terms-modal" id="modal-terminos" aria-hidden="true">
+  <div class="terms-card">
+    <div class="terms-head">
+      <div>
+        <div class="terms-title">Terminos y Condiciones de Spring Market</div>
+        <div class="terms-date">Ultima actualizacion: 21 de mayo de 2026</div>
+      </div>
+      <button class="terms-close" type="button" onclick="cerrarTerminos()">x</button>
+    </div>
+    <div class="terms-body">
+      <p>Al crear una cuenta en Spring Market, aceptas utilizar la plataforma de forma responsable y proporcionar informacion verdadera, completa y actualizada. La cuenta es personal e intransferible, por lo que eres responsable de mantener la confidencialidad de tus credenciales.</p>
+      <h3>Uso de la plataforma</h3>
+      <p>Spring Market permite consultar productos, gestionar compras y acceder a servicios relacionados con el supermercado. No esta permitido usar la plataforma para actividades fraudulentas, interferir con el funcionamiento del sistema o intentar acceder a informacion de otros usuarios.</p>
+      <h3>Datos personales</h3>
+      <p>La informacion proporcionada, como nombre, correo, telefono y direccion, sera utilizada para administrar la cuenta, procesar pedidos, brindar soporte y mejorar la experiencia del servicio. Spring Market aplicara medidas razonables de seguridad para proteger estos datos.</p>
+      <h3>Compras y disponibilidad</h3>
+      <p>Los precios, inventarios y promociones pueden variar por sucursal y disponibilidad. Spring Market podra corregir errores de informacion antes de confirmar una compra o entrega.</p>
+      <h3>Soporte y cambios</h3>
+      <p>El usuario puede solicitar asistencia tecnica desde el modulo de soporte. Spring Market puede actualizar estos terminos cuando sea necesario; los cambios estaran disponibles en esta misma seccion.</p>
+    </div>
+    <div class="terms-actions">
+      <button class="terms-accept" type="button" onclick="aceptarTerminos()">Aceptar terminos</button>
+    </div>
+  </div>
+</div>
+
 <script src="../js/api.js"></script>
 <script>
+  function abrirTerminos(event) {
+    event.preventDefault();
+    const modal = document.getElementById('modal-terminos');
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+  }
+
+  function cerrarTerminos() {
+    const modal = document.getElementById('modal-terminos');
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+  }
+
+  function aceptarTerminos() {
+    document.getElementById('terminos').checked = true;
+    cerrarTerminos();
+  }
+
   async function registrar() {
     const nombre   = (document.getElementById('nombre').value + ' ' + document.getElementById('apellido').value).trim();
     const email    = document.getElementById('email').value.trim();

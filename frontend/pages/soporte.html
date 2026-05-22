@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spring Market - Soporte</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    body { background:#f4f7ef; color:#111827; }
+    .support-shell { min-height:100vh; display:grid; grid-template-columns:minmax(280px, 420px) 1fr; }
+    .support-side { background:#1f7a4d; color:#fff; padding:48px; display:flex; flex-direction:column; justify-content:center; }
+    .brand { display:flex; align-items:center; gap:9px; font-weight:900; margin-bottom:36px; }
+    .brand-mark { width:28px; height:28px; border-radius:50%; background:#fff; color:#1f7a4d; display:grid; place-items:center; font-weight:900; }
+    .support-side h1 { font-family:var(--font-main); font-size:36px; line-height:1.12; margin-bottom:14px; }
+    .support-side p { color:rgba(255,255,255,.78); font-size:14px; line-height:1.7; }
+    .support-main { padding:44px 32px; display:flex; align-items:center; justify-content:center; }
+    .support-card { width:100%; max-width:760px; background:#fff; border:1px solid #e6ebef; border-radius:8px; padding:26px; box-shadow:0 12px 32px rgba(15,23,42,.08); }
+    .support-head { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; margin-bottom:22px; }
+    .support-head h2 { margin:0 0 4px; font-size:24px; font-weight:900; }
+    .support-head p { margin:0; color:#64748b; font-size:13px; }
+    .support-icon { width:44px; height:44px; border-radius:8px; background:#dcfce7; color:#07883f; display:grid; place-items:center; font-size:22px; }
+    .form-grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+    textarea { min-height:140px; resize:vertical; }
+    .actions { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:16px; }
+    .back-link { color:#64748b; text-decoration:none; font-size:13px; font-weight:800; }
+    .submit-btn { background:#19c45b; color:#fff; border:0; border-radius:8px; padding:12px 20px; font-weight:900; cursor:pointer; }
+    .submit-btn:disabled { opacity:.55; cursor:not-allowed; }
+    @media(max-width:850px) {
+      .support-shell { grid-template-columns:1fr; }
+      .support-side { padding:32px 22px; }
+      .support-main { padding:22px 14px; }
+      .form-grid-3, .form-grid { grid-template-columns:1fr; }
+      .actions { align-items:stretch; flex-direction:column-reverse; }
+      .submit-btn { width:100%; }
+    }
+  </style>
+</head>
+<body>
+<div class="support-shell">
+  <aside class="support-side">
+    <div class="brand"><span class="brand-mark">S</span> Spring Market</div>
+    <h1>Contactar soporte</h1>
+    <p>Registra incidencias de sistema, ventas, productos, inventario o acceso para que el equipo tecnico pueda dar seguimiento.</p>
+  </aside>
+
+  <main class="support-main">
+    <section class="support-card">
+      <div class="support-head">
+        <div>
+          <h2>Nuevo reporte</h2>
+          <p>Describe el problema con el mayor detalle posible.</p>
+        </div>
+        <div class="support-icon">🛠️</div>
+      </div>
+
+      <div id="alert-box" class="alert"></div>
+
+      <div class="form-group">
+        <label for="titulo">Titulo</label>
+        <input id="titulo" maxlength="150" placeholder="Ej. No puedo iniciar sesion">
+      </div>
+
+      <div class="form-grid-3">
+        <div class="form-group">
+          <label for="tipo">Tipo de problema</label>
+          <select id="tipo">
+            <option value="">Seleccionar</option>
+            <option>Inventario</option>
+            <option>Ventas</option>
+            <option>Productos</option>
+            <option>Login</option>
+            <option>Facturación</option>
+            <option>Sistema</option>
+            <option>Otro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="prioridad">Prioridad</label>
+          <select id="prioridad">
+            <option value="MEDIA">Media</option>
+            <option value="BAJA">Baja</option>
+            <option value="ALTA">Alta</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="sucursal">Sucursal</label>
+          <select id="sucursal"><option value="">Sin sucursal</option></select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="descripcion">Descripcion</label>
+        <textarea id="descripcion" placeholder="Explica que sucedio, en que pantalla y cualquier dato util."></textarea>
+      </div>
+
+      <div class="actions">
+        <a class="back-link" href="login-form.html">Volver</a>
+        <button class="submit-btn" id="btn-send" onclick="enviarReporte()">Enviar reporte</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+  async function cargarSucursales() {
+    try {
+      const sucursales = await Sucursales.listar();
+
+      document.getElementById('sucursal').innerHTML =
+              '<option value="">Sin sucursal</option>' +
+              sucursales.map(s =>
+                      `<option value="${s.id}">${s.nombre}</option>`
+              ).join('');
+
+    } catch (e) {
+      console.error(e);
+
+      document.getElementById('sucursal').innerHTML =
+              '<option value="">Sin sucursal</option>';
+    }
+  }
+  async function enviarReporte() {
+    const payload = {
+      titulo: document.getElementById('titulo').value.trim(),
+      tipoProblema: document.getElementById('tipo').value,
+      prioridad: document.getElementById('prioridad').value,
+      sucursalId: document.getElementById('sucursal').value ? Number(document.getElementById('sucursal').value) : null,
+      descripcion: document.getElementById('descripcion').value.trim()
+    };
+
+    if (!payload.titulo || !payload.tipoProblema || !payload.descripcion) {
+      showAlert('danger', 'Completa titulo, tipo de problema y descripcion');
+      return;
+    }
+
+    const btn = document.getElementById('btn-send');
+    btn.disabled = true;
+    btn.textContent = 'Enviando...';
+    try {
+      await Soporte.crear(payload);
+      showAlert('success', 'Reporte enviado correctamente');
+      document.getElementById('titulo').value = '';
+      document.getElementById('tipo').value = '';
+      document.getElementById('prioridad').value = 'MEDIA';
+      document.getElementById('sucursal').value = '';
+      document.getElementById('descripcion').value = '';
+    } catch (e) {
+      showAlert('danger', e.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Enviar reporte';
+    }
+  }
+
+  cargarSucursales();
+</script>
+</body>
+</html>

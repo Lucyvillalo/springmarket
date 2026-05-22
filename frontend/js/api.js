@@ -147,6 +147,7 @@ function setupResponsiveSidebar() {
     .admin-sidebar .side-nav a[href="sucursales.html"] { order: 4; }
     .admin-sidebar .side-nav a[href="proveedores.html"] { order: 5; }
     .admin-sidebar .side-nav a[href="reportes.html"] { order: 6; }
+    .admin-sidebar .side-nav a[href="soporte-admin.html"] { order: 7; }
     .manager,
     .customer {
       position: relative;
@@ -159,7 +160,7 @@ function setupResponsiveSidebar() {
       background: #ffffff;
       color: #334155;
       cursor: pointer;
-      font-size: 15px;
+      font-size: 17px;
       font-weight: 800;
       line-height: 1;
     }
@@ -323,12 +324,12 @@ function setupUserDropdown() {
   toggle.className = 'user-menu-toggle';
   toggle.setAttribute('aria-label', 'Opciones de usuario');
   toggle.setAttribute('aria-expanded', 'false');
-  toggle.textContent = 'v';
+  toggle.textContent = '⏻';
 
   const menu = document.createElement('div');
   menu.id = 'user-menu';
   menu.className = 'user-menu';
-  menu.innerHTML = '<button type="button" id="user-menu-logout">Cerrar sesion</button>';
+  menu.innerHTML = '<button type="button" id="user-menu-logout">⏻ Cerrar sesion</button>';
 
   userBox.appendChild(toggle);
   userBox.appendChild(menu);
@@ -438,6 +439,17 @@ const Proveedores = {
   crear:      (data)      => post('/proveedores', data),
   actualizar: (id, data)  => put('/proveedores/' + id, data),
   eliminar:   (id)        => del('/proveedores/' + id)
+};
+
+// =============================================
+// SOPORTE TECNICO
+// =============================================
+const Soporte = {
+  listar: () => get('/soporte'),
+  buscar: (id) => get('/soporte/' + id),
+  crear: (data) => post('/soporte', data),
+  actualizarEstado: (id, estado) => put('/soporte/' + id + '/estado', { estado }),
+  eliminar: (id) => del('/soporte/' + id)
 };
 
 // =============================================
