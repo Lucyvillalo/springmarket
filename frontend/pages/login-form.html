@@ -235,6 +235,7 @@
       // ✅ Login exitoso — guardar sesión
       localStorage.setItem('token',      data.token);
       localStorage.setItem('nombre',     data.nombre);
+      localStorage.setItem('username',   username);
       localStorage.setItem('cargo',      data.cargo);
       if (data.sucursalId) localStorage.setItem('sucursalId', data.sucursalId);
 
@@ -278,6 +279,7 @@
       // ✅ Login exitoso
       localStorage.setItem('token',     data.token);
       localStorage.setItem('nombre',    data.nombre);
+      localStorage.setItem('username',  email);
       localStorage.setItem('cargo',     'CLIENTE');
       localStorage.setItem('clienteId', data.clienteId);
 

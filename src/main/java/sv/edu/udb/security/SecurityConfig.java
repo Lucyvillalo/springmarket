@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -60,9 +61,21 @@ public class SecurityConfig {
                 .requestMatchers("/api/clientes/registro").permitAll()
                 .requestMatchers("/api/productos/disponibles").permitAll()
                 .requestMatchers("/api/productos/buscar").permitAll()
-                .requestMatchers("/api/categorias").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/categorias", "/api/categorias/**").permitAll()
                 .requestMatchers("/frontend/**").permitAll()
                 .requestMatchers("/", "/index.html", "/css/**", "/js/**", "/pages/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/productos/**").hasAnyRole("ADMIN", "CAJERO", "CLIENTE")
+                .requestMatchers(HttpMethod.POST, "/api/productos/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/productos/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/productos/**").hasRole("ADMIN")
+                .requestMatchers("/api/categorias/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/sucursales/**").hasAnyRole("ADMIN", "CAJERO")
+                .requestMatchers("/api/sucursales/**").hasRole("ADMIN")
+                .requestMatchers("/api/proveedores/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/clientes/**").hasAnyRole("ADMIN", "CAJERO")
+                .requestMatchers("/api/clientes/**").hasAnyRole("ADMIN", "CLIENTE")
+                .requestMatchers("/api/inventario/**").hasAnyRole("ADMIN", "CAJERO")
+                .requestMatchers("/api/ventas/**").hasAnyRole("ADMIN", "CAJERO", "CLIENTE")
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
