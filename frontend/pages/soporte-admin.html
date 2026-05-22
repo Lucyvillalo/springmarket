@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spring Market - Gestion de reportes</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    body { background:#f4f7ef; color:#111827; }
+    .admin-shell { min-height:100vh; display:grid; grid-template-columns:255px 1fr; }
+    .admin-sidebar { background:#b8f2c9; border-right:1px solid rgba(34,197,94,.25); padding:22px 20px; display:flex; flex-direction:column; gap:42px; position:sticky; top:0; height:100vh; }
+    .brand { display:flex; align-items:center; gap:9px; color:#19c45b; font-weight:800; font-size:16px; }
+    .brand-mark { width:24px; height:24px; border-radius:50%; background:#16d45b; color:#fff; display:grid; place-items:center; font-weight:800; }
+    .side-nav { display:flex; flex-direction:column; gap:14px; margin-top:34px; }
+    .side-item { display:flex; align-items:center; gap:11px; padding:10px 7px; color:#345246; text-decoration:none; font-size:13px; border-radius:8px; border:0; background:transparent; cursor:pointer; font-family:var(--font-main); }
+    .side-item.active, .side-item:hover { color:#153826; background:rgba(255,255,255,.32); }
+    .side-icon { width:18px; text-align:center; }
+    .support-main { padding:24px 28px 36px; overflow-x:hidden; }
+    .topbar { display:flex; align-items:center; gap:18px; margin-bottom:22px; }
+    .top-actions { margin-left:auto; display:flex; align-items:center; gap:18px; }
+    .manager { display:flex; align-items:center; gap:12px; padding-left:18px; border-left:1px solid #dbe3dc; }
+    .manager-name { font-size:12px; font-weight:800; text-align:right; line-height:1.1; }
+    .manager-role { display:block; font-size:8px; color:#64748b; letter-spacing:.08em; }
+    .avatar { width:34px; height:34px; border-radius:50%; background:#1f2937; color:#fff; display:grid; place-items:center; font-weight:800; }
+    .page-header { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:20px; }
+    .page-header h1 { font-size:26px; font-weight:900; margin:0 0 3px; }
+    .page-header p { color:#64748b; font-size:13px; margin:0; }
+    .kpi-grid { display:grid; grid-template-columns:repeat(4, minmax(150px, 1fr)); gap:14px; margin-bottom:18px; }
+    .kpi-card, .panel { background:#fff; border:1px solid #e6ebef; border-radius:8px; box-shadow:0 2px 10px rgba(15,23,42,.04); }
+    .kpi-card { padding:16px 18px; }
+    .kpi-label { color:#64748b; font-size:11px; text-transform:uppercase; font-weight:900; letter-spacing:.08em; }
+    .kpi-value { font-size:26px; font-weight:900; margin-top:5px; }
+    .panel { overflow:hidden; }
+    .toolbar { display:grid; grid-template-columns:1fr 170px 170px 190px; gap:10px; padding:18px; border-bottom:1px solid #edf1f4; }
+    .support-table { min-width:980px; width:100%; border-collapse:collapse; }
+    .support-table th { background:#f6f9ef; color:#334155; font-size:11px; text-transform:uppercase; padding:12px 14px; }
+    .support-table td { padding:14px; color:#475569; border-bottom:1px solid #edf1f4; }
+    .status, .priority { display:inline-flex; border-radius:999px; padding:4px 10px; font-size:10px; font-weight:900; }
+    .status.PENDIENTE { background:#fff7ed; color:#c46a00; }
+    .status.EN_PROCESO { background:#e0f2fe; color:#0369a1; }
+    .status.RESUELTO { background:#dcfce7; color:#07883f; }
+    .priority.ALTA { background:#fee2e2; color:#991b1b; }
+    .priority.MEDIA { background:#fef3c7; color:#92400e; }
+    .priority.BAJA { background:#dcfce7; color:#07883f; }
+    .action-row { display:flex; gap:6px; flex-wrap:wrap; }
+    .action-btn { border:0; border-radius:7px; padding:7px 9px; font-size:11px; font-weight:900; cursor:pointer; }
+    .btn-view { background:#e0f2fe; color:#0369a1; }
+    .btn-del { background:#fee2e2; color:#991b1b; }
+    .state-select { height:31px; width:128px; border:1px solid #dbe4ef; border-radius:7px; font-size:12px; }
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(15,23,42,.48); z-index:300; align-items:center; justify-content:center; padding:20px; }
+    .modal-overlay.open { display:flex; }
+    .modal { background:#fff; width:620px; max-width:95vw; border-radius:8px; padding:24px; box-shadow:0 20px 60px rgba(0,0,0,.18); }
+    .modal-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+    .modal-title { font-size:18px; font-weight:900; }
+    .close-btn { border:0; width:34px; height:34px; border-radius:8px; background:#fee2e2; color:#991b1b; cursor:pointer; font-weight:900; }
+    @media(max-width:980px) {
+      .kpi-grid, .toolbar { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <div>
+      <div class="brand"><span class="brand-mark">S</span> Spring Market</div>
+      <nav class="side-nav">
+        <a class="side-item" href="dashboard.html"><span class="side-icon">📊</span> Inicio</a>
+        <a class="side-item" href="productos.html"><span class="side-icon">📦</span> Productos</a>
+        <a class="side-item" href="ventas.html"><span class="side-icon">🛒</span> Ventas</a>
+        <a class="side-item" href="sucursales.html"><span class="side-icon">🏪</span> Sucursales</a>
+        <a class="side-item" href="proveedores.html"><span class="side-icon">🚚</span> Proveedores</a>
+        <a class="side-item" href="reportes.html"><span class="side-icon">📋</span> Reportes</a>
+        <a class="side-item active" href="soporte-admin.html"><span class="side-icon">🛠️</span> Soporte</a>
+      </nav>
+    </div>
+  </aside>
+
+  <main class="support-main">
+    <div class="topbar">
+      <div class="top-actions">
+        <div class="manager">
+          <div><div class="manager-name" id="user-name">Usuario</div><span class="manager-role">ADMINISTRADOR</span></div>
+          <div class="avatar" id="avatar">A</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-header">
+      <div>
+        <h1>Gestion de reportes</h1>
+        <p>Seguimiento administrativo de incidencias enviadas a soporte tecnico.</p>
+      </div>
+    </div>
+
+    <section class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-label">Total de reportes</div><div class="kpi-value" id="kpi-total">0</div></div>
+      <div class="kpi-card"><div class="kpi-label">Pendientes</div><div class="kpi-value" id="kpi-pendientes">0</div></div>
+      <div class="kpi-card"><div class="kpi-label">En proceso</div><div class="kpi-value" id="kpi-proceso">0</div></div>
+      <div class="kpi-card"><div class="kpi-label">Resueltos</div><div class="kpi-value" id="kpi-resueltos">0</div></div>
+    </section>
+
+    <section class="panel">
+      <div class="toolbar">
+        <input id="buscar" placeholder="Buscar por titulo, usuario o descripcion...">
+        <select id="f-estado"><option value="">Todos los estados</option><option>PENDIENTE</option><option>EN_PROCESO</option><option>RESUELTO</option></select>
+        <select id="f-prioridad"><option value="">Todas las prioridades</option><option>BAJA</option><option>MEDIA</option><option>ALTA</option></select>
+        <select id="f-tipo"><option value="">Todos los tipos</option><option>Inventario</option><option>Ventas</option><option>Productos</option><option>Login</option><option>Facturación</option><option>Sistema</option><option>Otro</option></select>
+      </div>
+      <div class="table-wrapper">
+        <table class="support-table">
+          <thead><tr><th>ID</th><th>Titulo</th><th>Usuario</th><th>Tipo</th><th>Prioridad</th><th>Sucursal</th><th>Fecha</th><th>Estado</th><th>Acciones</th></tr></thead>
+          <tbody id="reportes-body"><tr><td colspan="9">Cargando...</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="modal-overlay" id="detail-modal">
+  <div class="modal">
+    <div class="modal-head"><div class="modal-title" id="detail-title">Detalle</div><button class="close-btn" onclick="cerrarDetalle()">x</button></div>
+    <div id="detail-body"></div>
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+  if (!Auth.requireAuth(['ADMIN'])) throw new Error('No autorizado');
+  const nombre = localStorage.getItem('nombre') || 'Administrador';
+  const state = { reportes: [], filtrados: [] };
+
+  document.getElementById('user-name').textContent = nombre;
+  document.getElementById('avatar').textContent = nombre.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase();
+
+  async function cargar() {
+    state.reportes = await Soporte.listar();
+    pintarKpis();
+    aplicarFiltros();
+  }
+
+  function pintarKpis() {
+    document.getElementById('kpi-total').textContent = state.reportes.length;
+    document.getElementById('kpi-pendientes').textContent = contar('PENDIENTE');
+    document.getElementById('kpi-proceso').textContent = contar('EN_PROCESO');
+    document.getElementById('kpi-resueltos').textContent = contar('RESUELTO');
+  }
+
+  function contar(estado) {
+    return state.reportes.filter(r => r.estado === estado).length;
+  }
+
+  function aplicarFiltros() {
+    const q = document.getElementById('buscar').value.trim().toLowerCase();
+    const estado = document.getElementById('f-estado').value;
+    const prioridad = document.getElementById('f-prioridad').value;
+    const tipo = document.getElementById('f-tipo').value;
+    state.filtrados = state.reportes.filter(r => {
+      const texto = [r.id, r.titulo, r.usuario, r.descripcion, r.sucursalNombre].join(' ').toLowerCase();
+      return (!q || texto.includes(q))
+        && (!estado || r.estado === estado)
+        && (!prioridad || r.prioridad === prioridad)
+        && (!tipo || r.tipoProblema === tipo);
+    });
+    renderTabla();
+  }
+
+  function renderTabla() {
+    const body = document.getElementById('reportes-body');
+    if (!state.filtrados.length) {
+      body.innerHTML = '<tr><td colspan="9">No hay reportes para mostrar.</td></tr>';
+      return;
+    }
+    body.innerHTML = state.filtrados.map(r => `<tr>
+      <td>#${r.id}</td>
+      <td><strong>${r.titulo}</strong></td>
+      <td>${r.usuario || 'Sin usuario'}</td>
+      <td>${labelTipo(r.tipoProblema)}</td>
+      <td><span class="priority ${r.prioridad}">${r.prioridad}</span></td>
+      <td>${r.sucursalNombre || '-'}</td>
+      <td>${formatDate(r.fechaCreacion)}</td>
+      <td><span class="status ${r.estado}">${r.estado.replace('_', ' ')}</span></td>
+      <td>
+        <div class="action-row">
+          <button class="action-btn btn-view" onclick="verDetalle(${r.id})">Ver</button>
+          <select class="state-select" onchange="cambiarEstado(${r.id}, this.value)">
+            ${['PENDIENTE','EN_PROCESO','RESUELTO'].map(e => `<option value="${e}" ${r.estado === e ? 'selected' : ''}>${e.replace('_', ' ')}</option>`).join('')}
+          </select>
+          <button class="action-btn btn-del" onclick="eliminarReporte(${r.id})">Eliminar</button>
+        </div>
+      </td>
+    </tr>`).join('');
+  }
+
+  function labelTipo(tipo) {
+    return tipo;
+  }
+
+  function verDetalle(id) {
+    const r = state.reportes.find(x => Number(x.id) === Number(id));
+    if (!r) return;
+    document.getElementById('detail-title').textContent = `Reporte #${r.id}`;
+    document.getElementById('detail-body').innerHTML = `
+      <p><strong>Titulo:</strong> ${r.titulo}</p>
+      <p><strong>Usuario:</strong> ${r.usuario || 'Sin usuario'}</p>
+      <p><strong>Tipo:</strong> ${labelTipo(r.tipoProblema)}</p>
+      <p><strong>Prioridad:</strong> ${r.prioridad}</p>
+      <p><strong>Sucursal:</strong> ${r.sucursalNombre || '-'}</p>
+      <p><strong>Fecha:</strong> ${formatDate(r.fechaCreacion)}</p>
+      <p><strong>Estado:</strong> ${r.estado.replace('_', ' ')}</p>
+      <hr style="border:0;border-top:1px solid #e5e7eb;margin:14px 0">
+      <p style="white-space:pre-wrap">${r.descripcion}</p>
+    `;
+    document.getElementById('detail-modal').classList.add('open');
+  }
+
+  function cerrarDetalle() {
+    document.getElementById('detail-modal').classList.remove('open');
+  }
+
+  async function cambiarEstado(id, estado) {
+    await Soporte.actualizarEstado(id, estado);
+    await cargar();
+  }
+
+  async function eliminarReporte(id) {
+    if (!confirm('Eliminar este reporte?')) return;
+    await Soporte.eliminar(id);
+    await cargar();
+  }
+
+  ['buscar','f-estado','f-prioridad','f-tipo'].forEach(id => {
+    document.getElementById(id).addEventListener('input', aplicarFiltros);
+    document.getElementById(id).addEventListener('change', aplicarFiltros);
+  });
+
+  cargar().catch(e => document.getElementById('reportes-body').innerHTML = `<tr><td colspan="9">${e.message}</td></tr>`);
+</script>
+</body>
+</html>

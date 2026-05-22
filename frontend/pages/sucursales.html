@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spring Market - Sucursales</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    body { background:#f4f7ef; color:#111827; }
+    .admin-shell { min-height:100vh; display:grid; grid-template-columns:255px 1fr; }
+    .admin-sidebar { background:#b8f2c9; border-right:1px solid rgba(34,197,94,.25); padding:22px 20px; display:flex; flex-direction:column; gap:42px; position:sticky; top:0; height:100vh; }
+    .brand { display:flex; align-items:center; gap:9px; color:#19c45b; font-weight:800; font-size:16px; }
+    .brand-mark { width:24px; height:24px; border-radius:50%; background:#16d45b; color:#fff; display:grid; place-items:center; font-weight:800; }
+    .side-nav { display:flex; flex-direction:column; gap:14px; margin-top:34px; }
+    .side-item { display:flex; align-items:center; gap:11px; padding:10px 7px; color:#345246; text-decoration:none; font-size:13px; border-radius:8px; border:0; background:transparent; cursor:pointer; font-family:var(--font-main); }
+    .side-item.active, .side-item:hover { color:#153826; background:rgba(255,255,255,.32); }
+    .side-icon { width:18px; text-align:center; }
+    .logout { margin-top:auto; color:#ef4444; }
+    .branch-main { padding:24px 28px 36px; overflow-x:hidden; }
+    .topbar { display:flex; align-items:center; margin-bottom:22px; }
+    .top-actions { margin-left:auto; display:flex; align-items:center; gap:18px; }
+    .manager { display:flex; align-items:center; gap:12px; padding-left:18px; border-left:1px solid #dbe3dc; }
+    .manager-name { font-size:12px; font-weight:800; text-align:right; line-height:1.1; }
+    .manager-role { display:block; font-size:8px; color:#64748b; letter-spacing:.08em; }
+    .avatar { width:34px; height:34px; border-radius:50%; background:#1f2937; color:#fff; display:grid; place-items:center; font-weight:800; }
+    .page-header { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:20px; }
+    .page-header h1 { font-size:26px; font-weight:800; margin:0 0 3px; }
+    .page-header p { color:#64748b; font-size:13px; margin:0; }
+    .btn-primary-local { background:#19c45b; color:#fff; border:0; border-radius:8px; padding:10px 18px; font-size:13px; font-weight:800; cursor:pointer; }
+    .summary-grid { display:grid; grid-template-columns:repeat(3, minmax(180px, 1fr)); gap:14px; margin-bottom:18px; }
+    .summary-card, .panel, .directory-card { background:#fff; border:1px solid #e6ebef; border-radius:8px; box-shadow:0 2px 10px rgba(15,23,42,.04); }
+    .summary-card { padding:16px 18px; }
+    .summary-label { color:#64748b; font-size:11px; text-transform:uppercase; font-weight:800; letter-spacing:.08em; }
+    .summary-value { font-size:24px; font-weight:900; margin-top:5px; color:#111827; }
+    .panel { padding:20px; margin-bottom:18px; }
+    .panel-title { font-size:15px; font-weight:900; margin-bottom:14px; }
+    .chart-wrap { height:260px; }
+    .directory-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:14px; }
+    .directory-card { padding:18px; }
+    .directory-title { font-size:15px; font-weight:900; color:#111827; margin-bottom:8px; }
+    .directory-line { font-size:13px; color:#475569; margin:6px 0; }
+    .directory-label { color:#94a3b8; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.06em; }
+    .card-actions { display:flex; gap:8px; }
+    .btn-edit, .btn-del { flex:1; border:0; border-radius:7px; padding:8px 10px; font-size:12px; font-weight:800; cursor:pointer; }
+    .btn-edit { background:#e0f2fe; color:#0369a1; }
+    .btn-del { background:#fee2e2; color:#991b1b; }
+    .toolbar { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+    .toolbar input { max-width:360px; background:#fff; }
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(15,23,42,.45); z-index:300; align-items:center; justify-content:center; padding:18px; }
+    .modal-overlay.open { display:flex; }
+    .modal { background:#fff; width:520px; max-width:96vw; border-radius:12px; padding:24px; box-shadow:0 20px 60px rgba(0,0,0,.18); }
+    .modal-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
+    .modal-title { font-size:17px; font-weight:900; }
+    .close-btn { border:0; background:#fee2e2; color:#991b1b; border-radius:8px; width:32px; height:32px; cursor:pointer; }
+    .form-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:18px; }
+    @media(max-width:980px) { .summary-grid { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <div>
+      <div class="brand"><span class="brand-mark">S</span> Spring Market</div>
+      <nav class="side-nav">
+        <a class="side-item" href="dashboard.html"><span class="side-icon">📊</span> Inicio</a>
+        <a class="side-item" href="productos.html"><span class="side-icon">📦</span> Productos</a>
+        <a class="side-item" href="ventas.html"><span class="side-icon">🛒</span> Ventas</a>
+        <a class="side-item active" href="sucursales.html"><span class="side-icon">🏪</span> Sucursales</a>
+        <a class="side-item admin-only" href="proveedores.html"><span class="side-icon">🚚</span> Proveedores</a>
+        <a class="side-item" href="reportes.html"><span class="side-icon">📋</span> Reportes</a>
+        <a class="side-item admin-only" href="soporte-admin.html"><span class="side-icon">🛠️</span> Soporte</a>
+      </nav>
+    </div>
+  </aside>
+
+  <main class="branch-main">
+    <div class="topbar">
+      <div class="top-actions">
+        <div class="manager">
+          <div><div class="manager-name" id="user-name">Usuario</div><span class="manager-role" id="user-role">ROL</span></div>
+          <div class="avatar" id="avatar">U</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-header">
+      <div>
+        <h1>Sucursales</h1>
+        <p id="page-subtitle">Directorio de sucursales registrado en la base de datos.</p>
+      </div>
+      <button class="btn-primary-local admin-only" onclick="abrirModal()">Nueva sucursal</button>
+    </div>
+
+    <section class="summary-grid admin-only">
+      <div class="summary-card"><div class="summary-label">Sucursales</div><div class="summary-value" id="kpi-sucursales">0</div></div>
+      <div class="summary-card"><div class="summary-label">Ventas totales</div><div class="summary-value" id="kpi-ventas">0</div></div>
+      <div class="summary-card"><div class="summary-label">Sucursal lider</div><div class="summary-value" id="kpi-lider">-</div></div>
+    </section>
+
+    <section class="panel admin-only">
+      <div class="panel-title">Comparativo de ventas por sucursal</div>
+      <div class="chart-wrap"><canvas id="branch-chart"></canvas></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-title">Directorio</div>
+      <div class="toolbar"><input id="search" type="search" placeholder="Buscar sucursal, direccion o encargado..."></div>
+      <div class="directory-grid" id="directory"><div class="empty-state">Cargando sucursales...</div></div>
+    </section>
+  </main>
+</div>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-head"><div class="modal-title" id="modal-title">Nueva sucursal</div><button class="close-btn" onclick="cerrarModal()">x</button></div>
+    <input type="hidden" id="branch-id">
+    <div class="form-group"><label>Nombre</label><input id="branch-name"></div>
+    <div class="form-group"><label>Direccion</label><input id="branch-address"></div>
+    <div class="form-grid">
+      <div class="form-group"><label>Telefono</label><input id="branch-phone"></div>
+      <div class="form-group"><label>Encargado</label><input id="branch-manager"></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn-primary-local" onclick="guardarSucursal()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="../js/api.js"></script>
+<script>
+  if (!Auth.requireAuth(['ADMIN', 'CAJERO'])) throw new Error('No autorizado');
+  const cargo = localStorage.getItem('cargo');
+  const nombre = localStorage.getItem('nombre') || 'Usuario';
+  const state = { sucursales: [], ventas: [] };
+  let chart = null;
+
+  document.getElementById('user-name').textContent = nombre;
+  document.getElementById('avatar').textContent = nombre.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase();
+  document.getElementById('user-role').textContent = cargo === 'ADMIN' ? 'ADMINISTRADOR' : 'CAJERO';
+  if (cargo !== 'ADMIN') document.querySelectorAll('.admin-only').forEach(el => el.remove());
+  if (cargo !== 'ADMIN') document.getElementById('page-subtitle').textContent = 'Directorio para consultar telefonos, encargados y ubicaciones.';
+
+  async function cargar() {
+    state.sucursales = await Sucursales.listar();
+    if (cargo === 'ADMIN') {
+      const reporte = await Ventas.reporteGlobal();
+      state.ventas = reporte.ventas || [];
+      pintarResumen();
+      pintarGrafico();
+    }
+    renderDirectorio();
+  }
+
+  function resumenPorSucursal() {
+    return state.sucursales.map(s => {
+      const ventas = state.ventas.filter(v => String(v.sucursal?.id || '') === String(s.id));
+      const total = ventas.reduce((sum, v) => sum + Number(v.total || 0), 0);
+      return { sucursal: s, ventas: ventas.length, total };
+    });
+  }
+
+  function pintarResumen() {
+    const rows = resumenPorSucursal();
+    const lider = rows.slice().sort((a, b) => b.total - a.total)[0];
+    document.getElementById('kpi-sucursales').textContent = state.sucursales.length;
+    document.getElementById('kpi-ventas').textContent = state.ventas.length;
+    document.getElementById('kpi-lider').textContent = lider && lider.total > 0 ? lider.sucursal.nombre : '-';
+  }
+
+  function pintarGrafico() {
+    const rows = resumenPorSucursal();
+    const ctx = document.getElementById('branch-chart').getContext('2d');
+    if (chart) chart.destroy();
+    chart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: rows.map(r => r.sucursal.nombre),
+        datasets: [
+          { label: 'Monto vendido', data: rows.map(r => r.total), backgroundColor: 'rgba(25,196,91,.25)', borderColor: '#19c45b', borderWidth: 2, borderRadius: 6 },
+          { label: 'Ventas', data: rows.map(r => r.ventas), backgroundColor: 'rgba(3,105,161,.18)', borderColor: '#0369a1', borderWidth: 2, borderRadius: 6 }
+        ]
+      },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom' } }, scales:{ y:{ beginAtZero:true } } }
+    });
+  }
+
+  function renderDirectorio() {
+    const q = document.getElementById('search').value.trim().toLowerCase();
+    const list = state.sucursales.filter(s => [s.nombre, s.direccion, s.telefono, s.encargado].some(v => String(v || '').toLowerCase().includes(q)));
+    const dir = document.getElementById('directory');
+    if (!list.length) {
+      dir.innerHTML = '<div class="empty-state">No hay sucursales para mostrar.</div>';
+      return;
+    }
+    dir.innerHTML = list.map(s => `<article class="directory-card">
+      <div class="directory-title">${s.nombre}</div>
+      <div class="directory-line"><span class="directory-label">Direccion</span><br>${s.direccion || '-'}</div>
+      <div class="directory-line"><span class="directory-label">Telefono</span><br>${s.telefono || '-'}</div>
+      <div class="directory-line"><span class="directory-label">Encargado</span><br>${s.encargado || '-'}</div>
+      ${cargo === 'ADMIN' ? `<div class="card-actions" style="margin-top:14px"><button class="btn-edit" onclick="editar(${s.id})">Editar</button><button class="btn-del" onclick="eliminar(${s.id})">Eliminar</button></div>` : ''}
+    </article>`).join('');
+  }
+
+  function abrirModal() {
+    document.getElementById('modal-title').textContent = 'Nueva sucursal';
+    ['branch-id','branch-name','branch-address','branch-phone','branch-manager'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('modal').classList.add('open');
+  }
+  function cerrarModal() { document.getElementById('modal').classList.remove('open'); }
+  function editar(id) {
+    const s = state.sucursales.find(x => x.id === id);
+    if (!s) return;
+    document.getElementById('modal-title').textContent = 'Editar sucursal';
+    document.getElementById('branch-id').value = s.id;
+    document.getElementById('branch-name').value = s.nombre || '';
+    document.getElementById('branch-address').value = s.direccion || '';
+    document.getElementById('branch-phone').value = s.telefono || '';
+    document.getElementById('branch-manager').value = s.encargado || '';
+    document.getElementById('modal').classList.add('open');
+  }
+  async function guardarSucursal() {
+    const id = document.getElementById('branch-id').value;
+    const payload = {
+      nombre: document.getElementById('branch-name').value.trim(),
+      direccion: document.getElementById('branch-address').value.trim(),
+      telefono: document.getElementById('branch-phone').value.trim(),
+      encargado: document.getElementById('branch-manager').value.trim()
+    };
+    if (!payload.nombre) return alert('El nombre es obligatorio.');
+    id ? await Sucursales.actualizar(id, payload) : await Sucursales.crear(payload);
+    cerrarModal();
+    await cargar();
+  }
+  async function eliminar(id) {
+    if (!confirm('Eliminar esta sucursal?')) return;
+    await Sucursales.eliminar(id);
+    await cargar();
+  }
+  document.getElementById('search').addEventListener('input', renderDirectorio);
+  cargar().catch(e => document.getElementById('directory').innerHTML = '<div class="empty-state">' + e.message + '</div>');
+</script>
+</body>
+</html>

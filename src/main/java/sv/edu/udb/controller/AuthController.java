@@ -93,6 +93,64 @@ public class AuthController {
         return ResponseEntity.ok(resp);
     }
 
+    // POST /api/auth/reset-password
+    @PostMapping("/reset-password")
+    public ResponseEntity<Map<String, Object>> resetPassword(@RequestBody ResetPasswordRequest req) {
+        Map<String, Object> error = new HashMap<>();
+
+        if (req.getTipo() == null || req.getTipo().isBlank()) {
+            error.put("error", "El tipo de cuenta es obligatorio");
+            error.put("message", "El tipo de cuenta es obligatorio");
+            return ResponseEntity.badRequest().body(error);
+        }
+
+        if (req.getIdentificador() == null || req.getIdentificador().isBlank()) {
+            error.put("error", "El usuario o correo es obligatorio");
+            error.put("message", "El usuario o correo es obligatorio");
+            return ResponseEntity.badRequest().body(error);
+        }
+
+        if (req.getPassword() == null || req.getPassword().length() < 6) {
+            error.put("error", "La contrasena debe tener al menos 6 caracteres");
+            error.put("message", "La contrasena debe tener al menos 6 caracteres");
+            return ResponseEntity.badRequest().body(error);
+        }
+
+        String tipo = req.getTipo().trim().toLowerCase();
+        String identificador = req.getIdentificador().trim();
+        String passwordHash = passwordEncoder.encode(req.getPassword());
+
+        if ("cliente".equals(tipo)) {
+            Optional<Cliente> optCli = clienteRepo.findByEmail(identificador);
+            if (optCli.isEmpty()) {
+                error.put("error", "Correo no registrado");
+                error.put("message", "Correo no registrado");
+                return ResponseEntity.status(404).body(error);
+            }
+            Cliente cli = optCli.get();
+            cli.setPassword(passwordHash);
+            clienteRepo.save(cli);
+        } else if ("empleado".equals(tipo) || "admin".equals(tipo)) {
+            Optional<Empleado> optEmp = empleadoRepo.findByUsername(identificador);
+            if (optEmp.isEmpty()) {
+                error.put("error", "Usuario no encontrado");
+                error.put("message", "Usuario no encontrado");
+                return ResponseEntity.status(404).body(error);
+            }
+            Empleado emp = optEmp.get();
+            emp.setPassword(passwordHash);
+            empleadoRepo.save(emp);
+        } else {
+            error.put("error", "Tipo de cuenta invalido");
+            error.put("message", "Tipo de cuenta invalido");
+            return ResponseEntity.badRequest().body(error);
+        }
+
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("message", "Contrasena actualizada correctamente. Ya puedes iniciar sesion.");
+        return ResponseEntity.ok(resp);
+    }
+
     public static class LoginRequest {
         private String username, password;
         public String getUsername() { return username; }
@@ -107,5 +165,15 @@ public class AuthController {
         public void setEmail(String e) { this.email = e; }
         public String getPassword() { return password; }
         public void setPassword(String p) { this.password = p; }
+    }
+
+    public static class ResetPasswordRequest {
+        private String tipo, identificador, password;
+        public String getTipo() { return tipo; }
+        public void setTipo(String tipo) { this.tipo = tipo; }
+        public String getIdentificador() { return identificador; }
+        public void setIdentificador(String identificador) { this.identificador = identificador; }
+        public String getPassword() { return password; }
+        public void setPassword(String password) { this.password = password; }
     }
 }

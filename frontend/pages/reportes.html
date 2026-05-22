@@ -171,13 +171,15 @@
     <div>
       <div class="brand"><span class="brand-mark">S</span> Spring Market</div>
       <nav class="side-nav" id="side-nav">
-        <a class="side-item" href="dashboard.html"><span class="side-icon">📊</span> Dashboard</a>
-        <a class="side-item admin-only" href="productos.html"><span class="side-icon">📦</span> Productos</a>
-        <a class="side-item admin-only" href="sucursales.html"><span class="side-icon">🏪</span> Sucursales</a>
+        <a class="side-item" href="dashboard.html"><span class="side-icon">📊</span> Inicio</a>
+        <a class="side-item" href="productos.html"><span class="side-icon">📦</span> Productos</a>
+        <a class="side-item" href="ventas.html"><span class="side-icon">🛒</span> Ventas</a>
+        <a class="side-item" href="sucursales.html"><span class="side-icon">🏪</span> Sucursales</a>
+        <a class="side-item admin-only" href="proveedores.html"><span class="side-icon">🚚</span> Proveedores</a>
         <a class="side-item active" href="reportes.html"><span class="side-icon">📋</span> Reportes</a>
+        <a class="side-item admin-only" href="soporte-admin.html"><span class="side-icon">🛠️</span> Soporte</a>
       </nav>
     </div>
-    <button class="side-item logout" onclick="Auth.logout()"><span class="side-icon">🚪</span> Cerrar Sesion</button>
   </aside>
 
   <main class="report-main">
@@ -286,6 +288,7 @@
   const state = { ventas: [], filtered: [], page: 1, pageSize: 5, sucursales: [] };
   const cargo = localStorage.getItem('cargo');
   const nombre = localStorage.getItem('nombre') || 'Usuario';
+  const username = localStorage.getItem('username') || '';
 
   document.getElementById('user-name').textContent = nombre;
   document.getElementById('avatar').textContent = nombre.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase();
@@ -299,13 +302,16 @@
   if (cargo === 'CAJERO') {
     document.getElementById('page-title').textContent = 'Mis ventas';
     document.getElementById('page-subtitle').textContent = 'Reporte de ventas registradas por tu usuario.';
-    document.getElementById('summary-context').textContent = 'Cajero';
+    document.getElementById('summary-context').textContent = cajeroLabel(username, nombre);
   }
   if (cargo === 'CLIENTE') {
     document.getElementById('page-title').textContent = 'Mis compras';
     document.getElementById('page-subtitle').textContent = 'Reporte de compras realizadas por tu cuenta.';
     document.getElementById('person-header').textContent = 'Cliente';
     document.getElementById('summary-context').textContent = 'Cliente';
+    document.querySelector('a[href="sucursales.html"]')?.remove();
+    document.querySelector('a[href="ventas.html"]')?.remove();
+    document.querySelector('a[href="productos.html"]')?.remove();
   }
 
   async function cargar() {
@@ -340,6 +346,12 @@
   function pintarResumen(reporte) {
     document.getElementById('summary-count').textContent = reporte.totalVentas || 0;
     document.getElementById('summary-total').textContent = formatPrice(reporte.montoTotal || 0);
+  }
+
+  function cajeroLabel(user, displayName) {
+    const source = String(user || displayName || '').toLowerCase();
+    const match = source.match(/(\d+)/);
+    return match ? 'Cajero #' + match[1] : 'Cajero';
   }
 
   function aplicarFiltros() {

@@ -3,179 +3,566 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Spring Market — Portal de Acceso</title>
-  <link rel="stylesheet" href="../css/style.css">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
   <style>
-    .portal-wrapper {
-      min-height: 100vh; display: flex; align-items: center; justify-content: center;
-      background: #e8f0e9; position: relative; overflow: hidden; padding: 24px;
-    }
-    /* Ola verde decorativa inferior */
-    .portal-wrapper::after {
-      content: ''; position: absolute; bottom: -80px; left: -5%; width: 110%; height: 260px;
-      background: #a8c5a0; opacity: .45; border-radius: 55% 55% 0 0; z-index: 0;
-    }
-    .portal-card {
-      background: #fff; border-radius: 24px; padding: 48px 44px; width: 100%;
-      max-width: 1000px; box-shadow: 0 8px 40px rgba(30,60,30,.13);
-      position: relative; z-index: 1;
-    }
-    .portal-card .top-nav {
-      display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 48px;
-    }
-    .portal-logo { font-family: var(--font-display); font-size: 20px; color: var(--green-700); display: flex; align-items: center; gap: 8px; }
-    .portal-logo svg { width: 22px; height: 22px; }
-    .top-links { display: flex; gap: 24px; font-size: 14px; color: var(--gray-600); }
-    .top-links a { text-decoration: none; color: var(--gray-600); transition: color .15s; font-weight: 500; }
-    .top-links a:hover { color: var(--green-700); }
-    .top-links a.active { color: var(--gray-800); font-weight: 700; }
+    
 
-    .portal-title { text-align: center; font-family: var(--font-display); font-size: 30px; font-weight: 400; color: var(--gray-800); margin-bottom: 40px; }
-
-    .role-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-    .role-card {
-      border: 2px solid var(--gray-200); border-radius: 20px; padding: 32px 28px 28px;
-      text-align: center; cursor: pointer; transition: all .2s; background: #fff;
-      display: flex; flex-direction: column; align-items: center; gap: 16px;
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
     }
-    .role-card:hover { border-color: var(--green-600); background: var(--green-50); box-shadow: 0 4px 20px rgba(45,106,79,.12); }
-    .role-card.selected { border-color: var(--green-700); background: var(--green-50); }
 
-    .role-img {
-      width: 100px; height: 100px; border-radius: 50%; overflow: hidden;
-      display: flex; align-items: center; justify-content: center;
-      background: #e8f0e9; margin-bottom: 4px; flex-shrink: 0;
+    body{
+      font-family:'Poppins',sans-serif;
+      overflow-x:hidden;
+      background:#eef3ed;
     }
-    .role-img img { width: 100%; height: 100%; object-fit: cover; }
 
-    .role-card h3 { font-size: 20px; font-weight: 700; color: var(--gray-800); margin: 0; }
-    .role-card p  { font-size: 14px; color: var(--gray-600); margin: 0; line-height: 1.5; }
+    /* =========================
+       FONDO SUPERMERCADO
+    ==========================*/
 
-    .btn-ingresar {
-      width: 100%; padding: 14px; border-radius: 50px; border: none; cursor: pointer;
-      font-size: 15px; font-weight: 700; font-family: var(--font-main);
-      background: var(--green-700); color: #fff; margin-top: 8px;
-      transition: background .2s, transform .15s; display: flex; align-items: center; justify-content: center; gap: 8px;
+    .portal-wrapper{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:40px;
+
+    background:
+    linear-gradient(rgba(255,255,255,.58), rgba(255,255,255,.60)),
+    url("imagen para fondo.jpg");
+
+    background-size:cover;
+    background-position:center;
+    background-repeat:no-repeat;
+    background-attachment:fixed;
+}
+    /* =========================
+       CARD PRINCIPAL
+    ==========================*/
+
+    .portal-card{
+      width:100%;
+      max-width:1150px;
+
+      background:rgba(255,255,255,.88);
+
+      backdrop-filter:blur(14px);
+
+      border:1px solid rgba(255,255,255,.75);
+
+      border-radius:34px;
+
+      padding:45px;
+
+      box-shadow:
+      0 12px 40px rgba(0,0,0,.12);
+
+      position:relative;
+      overflow:hidden;
     }
-    .btn-ingresar:hover { background: var(--green-900); transform: translateY(-1px); }
 
-    .portal-footer { text-align: center; margin-top: 28px; font-size: 13px; color: var(--gray-400); }
-    .portal-footer a { color: var(--green-700); text-decoration: none; }
-
-    .btn-crear-cuenta {
-      display:inline-flex; align-items:center; gap:8px;
-      padding:12px 32px; border-radius:50px;
-      border:2px solid var(--green-700); background:transparent;
-      color:var(--green-700); font-weight:700; font-size:14px;
-      text-decoration:none; transition:all .2s;
-      font-family:var(--font-main);
+    .portal-card::before{
+      content:'';
+      position:absolute;
+      top:-120px;
+      right:-120px;
+      width:260px;
+      height:260px;
+      border-radius:50%;
+      background:rgba(82,183,136,.14);
     }
-    .btn-crear-cuenta:hover { background:var(--green-700); color:#fff; }
-    @media(max-width:640px){ .role-cards{grid-template-columns:1fr;} .portal-card{padding:28px 20px;} }
+
+    .portal-card::after{
+      content:'';
+      position:absolute;
+      bottom:-120px;
+      left:-120px;
+      width:260px;
+      height:260px;
+      border-radius:50%;
+      background:rgba(82,183,136,.08);
+    }
+
+    /* =========================
+       NAVBAR
+    ==========================*/
+
+    .top-nav{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:50px;
+      position:relative;
+      z-index:2;
+    }
+
+    .portal-logo{
+      display:flex;
+      align-items:center;
+      gap:12px;
+
+      color:#1f2937;
+      font-size:24px;
+      font-weight:700;
+    }
+
+    .portal-logo svg{
+      width:28px;
+      height:28px;
+    }
+
+    .top-links{
+      display:flex;
+      gap:28px;
+    }
+
+    .top-links a{
+      text-decoration:none;
+      color:#4b5563;
+      font-size:14px;
+      font-weight:500;
+      transition:.2s;
+    }
+
+    .top-links a:hover{
+      color:#2d6a4f;
+    }
+
+    .top-links a.active{
+      color:#2d6a4f;
+      font-weight:700;
+    }
+
+    /* =========================
+       TITULOS
+    ==========================*/
+
+    .welcome-text{
+      text-align:center;
+      color:#4b5563;
+      font-size:15px;
+      line-height:1.7;
+      margin-bottom:18px;
+      position:relative;
+      z-index:2;
+    }
+
+    .portal-title{
+      text-align:center;
+      color:#111827;
+      font-size:42px;
+      font-weight:700;
+      margin-bottom:45px;
+      position:relative;
+      z-index:2;
+    }
+
+    .portal-title span{
+      color:#40916c;
+    }
+
+    /* =========================
+       CARDS
+    ==========================*/
+
+    .role-cards{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:28px;
+      position:relative;
+      z-index:2;
+    }
+
+    .role-card{
+      background:rgba(255,255,255,.80);
+
+      border:1px solid rgba(0,0,0,.06);
+
+      border-radius:28px;
+
+      padding:35px 30px;
+
+      transition:.35s;
+
+      cursor:pointer;
+
+      text-align:center;
+    }
+
+    .role-card:hover{
+      transform:translateY(-8px);
+
+      border-color:#52b788;
+
+      box-shadow:
+      0 12px 30px rgba(0,0,0,.10);
+
+      background:#fff;
+    }
+
+    .role-card.selected{
+      border:2px solid #40916c;
+      background:#f3fbf6;
+    }
+
+    .role-img{
+      width:120px;
+      height:120px;
+
+      margin:auto;
+      margin-bottom:22px;
+
+      border-radius:50%;
+      overflow:hidden;
+
+      border:4px solid rgba(82,183,136,.18);
+
+      box-shadow:0 8px 20px rgba(0,0,0,.10);
+    }
+
+    .role-img img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    .role-card h3{
+      color:#111827;
+      font-size:24px;
+      margin-bottom:12px;
+    }
+
+    .role-card p{
+      color:#4b5563;
+      font-size:14px;
+      line-height:1.7;
+      margin-bottom:24px;
+    }
+
+    /* =========================
+       BOTONES
+    ==========================*/
+
+    .btn-ingresar{
+      width:100%;
+
+      padding:15px;
+
+      border:none;
+      border-radius:50px;
+
+      background:linear-gradient(135deg,#40916c,#2d6a4f);
+
+      color:#fff;
+
+      font-size:15px;
+      font-weight:600;
+
+      cursor:pointer;
+
+      transition:.25s;
+
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+    }
+
+    .btn-ingresar:hover{
+      transform:translateY(-2px);
+
+      background:linear-gradient(135deg,#52b788,#2d6a4f);
+
+      box-shadow:0 8px 20px rgba(45,106,79,.25);
+    }
+
+    .btn-crear-cuenta{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+
+      padding:14px 28px;
+
+      border-radius:50px;
+
+      border:2px solid #40916c;
+
+      background:transparent;
+
+      color:#2d6a4f;
+
+      text-decoration:none;
+
+      font-size:14px;
+      font-weight:600;
+
+      transition:.25s;
+    }
+
+    .btn-crear-cuenta:hover{
+      background:#40916c;
+      color:#fff;
+      transform:translateY(-2px);
+    }
+
+    /* =========================
+       CLIENTE BOX
+    ==========================*/
+
+    .cliente-box{
+      margin-top:35px;
+
+      padding:28px;
+
+      border-radius:24px;
+
+      background:rgba(255,255,255,.75);
+
+      border:1px solid rgba(0,0,0,.05);
+
+      text-align:center;
+
+      position:relative;
+      z-index:2;
+    }
+
+    .cliente-box p{
+      color:#374151;
+      margin-bottom:18px;
+      font-size:15px;
+    }
+
+    .cliente-actions{
+      display:flex;
+      justify-content:center;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+
+    /* =========================
+       FOOTER
+    ==========================*/
+
+    .portal-footer{
+      text-align:center;
+      margin-top:22px;
+      position:relative;
+      z-index:2;
+    }
+
+    .portal-footer a{
+      color:#2d6a4f;
+      text-decoration:none;
+      font-size:14px;
+      font-weight:500;
+    }
+
+    /* =========================
+       RESPONSIVE
+    ==========================*/
+
+    @media(max-width:850px){
+
+      .portal-card{
+        padding:30px 22px;
+      }
+
+      .role-cards{
+        grid-template-columns:1fr;
+      }
+
+      .portal-title{
+        font-size:32px;
+      }
+
+      .top-nav{
+        flex-direction:column;
+        gap:20px;
+      }
+
+      .top-links{
+        flex-wrap:wrap;
+        justify-content:center;
+      }
+
+    }
+
   </style>
 </head>
+
 <body>
+
 <div class="portal-wrapper">
+
   <div class="portal-card">
-    <!-- Top nav -->
+
+    <!-- NAV -->
     <div class="top-nav">
+
       <div class="portal-logo">
-        <svg viewBox="0 0 24 24" fill="var(--green-700)"><path d="M12 2C8 2 5 5.5 5 10c0 5 4 10 7 12 3-2 7-7 7-12 0-4.5-3-8-7-8z"/><circle cx="12" cy="10" r="3" fill="#fff"/></svg>
+
+        <svg viewBox="0 0 24 24" fill="#40916c">
+          <path d="M12 2C8 2 5 5.5 5 10c0 5 4 10 7 12 3-2 7-7 7-12 0-4.5-3-8-7-8z"/>
+          <circle cx="12" cy="10" r="3" fill="#fff"/>
+        </svg>
+
         Spring Market
+
       </div>
+
       <div class="top-links">
         <a href="#">Gestión de Identidad</a>
         <a href="#" class="active">Portal de Acceso</a>
       </div>
+
     </div>
 
-    <p style="text-align:center;color:var(--gray-600);font-size:15px;margin-bottom:12px">
-      Bienvenido de nuevo al ecosistema de gestión inteligente de Spring Market.<br>
-      Por favor, identifique su rol para continuar.
+    <!-- TEXTO -->
+    <p class="welcome-text">
+      Bienvenido al ecosistema inteligente de gestión de Spring Market.<br>
+      Seleccione el tipo de usuario para acceder a la plataforma.
     </p>
 
-    <h2 class="portal-title">Selecciona tu tipo de usuario</h2>
+    <h1 class="portal-title">
+      Acceso al <span>Supermercado Inteligente</span>
+    </h1>
 
+    <!-- CARDS -->
     <div class="role-cards">
-      <!-- Empleado / Vendedor -->
+
+      <!-- EMPLEADO -->
       <div class="role-card" id="card-empleado" onclick="seleccionarRol('empleado')">
+
         <div class="role-img">
-          <!-- SVG ilustración persona trabajando -->
-          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-            <rect width="100" height="100" fill="#d8f3dc"/>
-            <circle cx="50" cy="35" r="18" fill="#a8c5a0"/>
-            <circle cx="50" cy="32" r="14" fill="#f5d5b0"/>
-            <rect x="28" y="50" width="44" height="30" rx="8" fill="#2d6a4f"/>
-            <rect x="34" y="56" width="10" height="16" rx="3" fill="#fff" opacity=".4"/>
-            <rect x="46" y="56" width="10" height="16" rx="3" fill="#fff" opacity=".4"/>
-            <rect x="58" y="56" width="10" height="10" rx="3" fill="#fff" opacity=".4"/>
-            <!-- laptop hint -->
-            <rect x="20" y="70" width="26" height="16" rx="4" fill="#1a3d2b"/>
-            <rect x="22" y="72" width="22" height="10" rx="2" fill="#52b788" opacity=".8"/>
-          </svg>
+          <img src="imagen de registro1.jpg">
         </div>
+
         <h3>Empleado / Vendedor</h3>
-        <p>Supervisar y analizar el negocio en tiempo real desde el piso de venta.</p>
-        <button class="btn-ingresar" onclick="irALogin('empleado')">Ingresar →</button>
-      </div>
 
-      <!-- Administrador -->
-      <div class="role-card" id="card-admin" onclick="seleccionarRol('admin')">
-        <div class="role-img">
-          <!-- SVG ilustración persona admin -->
-          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-            <rect width="100" height="100" fill="#eef0eb"/>
-            <circle cx="50" cy="35" r="18" fill="#c8d8c0"/>
-            <circle cx="50" cy="32" r="14" fill="#c8956c"/>
-            <!-- traje oscuro -->
-            <rect x="28" y="50" width="44" height="32" rx="8" fill="#1a3d2b"/>
-            <rect x="44" y="50" width="12" height="32" fill="#2d6a4f" opacity=".5"/>
-            <!-- papeles -->
-            <rect x="54" y="58" width="18" height="22" rx="3" fill="#fff" opacity=".9"/>
-            <rect x="56" y="62" width="14" height="2" rx="1" fill="#9aa096"/>
-            <rect x="56" y="66" width="10" height="2" rx="1" fill="#9aa096"/>
-            <rect x="56" y="70" width="12" height="2" rx="1" fill="#9aa096"/>
-          </svg>
-        </div>
-        <h3>Administrador</h3>
-        <p>Gestionar y controlar el sistema, usuarios y configuraciones globales.</p>
-        <button class="btn-ingresar" onclick="irALogin('admin')">Ingresar →</button>
-      </div>
-    </div>
+        <p>
+          Controle ventas, inventario y atención al cliente desde el sistema de gestión.
+        </p>
 
-    <div style="text-align:center; margin-top:28px;">
-      <p style="font-size:14px; color:var(--gray-600); margin-bottom:12px;">
-        ¿Eres cliente? Inicia sesión o crea una cuenta nueva.
-      </p>
-      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-        <button class="btn-ingresar" style="width:auto;padding:12px 28px;" onclick="irALogin('cliente')">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          Soy cliente — Iniciar sesión
+        <button class="btn-ingresar" onclick="irALogin('empleado')">
+          Ingresar →
         </button>
-        <a href="registro.html" class="btn-crear-cuenta">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
-          Crear cuenta nueva
-        </a>
+
       </div>
+
+      <!-- ADMIN -->
+      <div class="role-card" id="card-admin" onclick="seleccionarRol('admin')">
+
+        <div class="role-img">
+          <img src="admin.jpg">
+        </div>
+
+        <h3>Administrador</h3>
+
+        <p>
+          Administre usuarios, reportes, configuraciones y operaciones globales.
+        </p>
+
+        <button class="btn-ingresar" onclick="irALogin('admin')">
+          Ingresar →
+        </button>
+
+      </div>
+
     </div>
 
-    <div class="portal-footer" style="margin-top:16px;">
-      <a href="#">Contacta a soporte técnico</a>
+    <!-- CLIENTES -->
+    <div class="cliente-box">
+
+      <p>
+        ¿Eres cliente? Accede a tu cuenta o crea una nueva.
+      </p>
+
+      <div class="cliente-actions">
+
+        <button
+          class="btn-ingresar"
+          style="width:auto;padding:14px 24px;"
+          onclick="irALogin('cliente')"
+        >
+
+          <svg width="16" height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5">
+
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+
+          </svg>
+
+          Soy cliente
+
+        </button>
+
+        <a href="registro.html" class="btn-crear-cuenta">
+
+          <svg width="16" height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5">
+
+            <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <line x1="19" y1="8" x2="19" y2="14"/>
+            <line x1="22" y1="11" x2="16" y2="11"/>
+
+          </svg>
+
+          Crear cuenta
+
+        </a>
+
+      </div>
+
     </div>
+
+    <!-- FOOTER -->
+    <div class="portal-footer">
+      <a href="soporte.html">Contactar soporte técnico</a>
+    </div>
+
   </div>
+
 </div>
 
-<script src="../js/api.js"></script>
 <script>
-  function seleccionarRol(rol) {
-    document.getElementById('card-empleado').classList.toggle('selected', rol === 'empleado');
-    document.getElementById('card-admin').classList.toggle('selected', rol === 'admin');
+
+  function seleccionarRol(rol){
+
+    document.getElementById('card-empleado')
+      .classList.toggle('selected', rol === 'empleado');
+
+    document.getElementById('card-admin')
+      .classList.toggle('selected', rol === 'admin');
+
   }
-  function irALogin(rol) {
+
+  function irALogin(rol){
+
     sessionStorage.setItem('loginRol', rol);
+
     window.location.href = 'login-form.html';
+
   }
+
 </script>
+
 </body>
 </html>
